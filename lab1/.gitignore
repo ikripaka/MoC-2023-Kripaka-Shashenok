@@ -1,0 +1,5 @@
+./auxil
+./out
+*.aux
+*.log
+*.out
