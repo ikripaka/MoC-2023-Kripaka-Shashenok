@@ -3,13 +3,15 @@ use regex::Regex;
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Read, Write};
 use rust_pr::criterions;
-use rust_pr::internals::{calculate_entropy, make_frequency_table, make_n_gram, make_probability_table};
+use rust_pr::internals::{calculate_entropy, make_frequency_table, make_n_gram_on_alphabet, make_probability_table};
 
 
 const UKR_ALPHABET: [char; 33] = [
     'а', 'б', 'в', 'г', 'ґ', 'д', 'е', 'є', 'ж', 'з', 'и', 'і', 'ї', 'й', 'к', 'л', 'м', 'н', 'о',
     'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ь', 'ю', 'я',
 ];
+
+// todo bring tokio async context to do all things asynchronously
 
 fn main() {
     dotenv().ok();
@@ -21,7 +23,7 @@ fn main() {
     // );
 
     let chunks = 2;
-    let monogram = make_n_gram(chunks, &UKR_ALPHABET);
+    let monogram = make_n_gram_on_alphabet(chunks, &UKR_ALPHABET);
     let freq_table1 = make_frequency_table(&filepath, &monogram, chunks);
     println!("monogram entropy: {}", calculate_entropy(&make_probability_table(&freq_table1)));
 
