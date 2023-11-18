@@ -4,6 +4,7 @@ use std::io::{BufRead, BufReader, BufWriter, Read, Write};
 
 use regex::Regex;
 
+///
 pub fn make_frequency_table(
     filepath: &str,
     alphabet: &Vec<String>,
@@ -14,18 +15,20 @@ pub fn make_frequency_table(
     file.read_to_string(&mut content);
 
     //trim string to specific size
-    if content.len() % chunks != 0 {
-        for _ in (0..(content.len() % chunks)) {
-            content.remove(content.len() - 1);
+    if content.chars().count() % chunks != 0 {
+        let str_len = content.chars().count();
+        for _ in 0..(str_len % chunks) {
+            content.pop().unwrap();
         }
     }
 
     let mut chars = content.chars();
     let mut sub_string = (0..)
         .map(|_| chars.by_ref().take(chunks).collect::<String>())
-        .take_while(|s| !s.is_empty())
+        .take_while(|s| {
+            !s.is_empty()
+        })
         .collect::<Vec<_>>();
-    sub_string.remove(sub_string.len() - 1);
 
     let mut map = alphabet
         .iter()
@@ -46,7 +49,31 @@ pub fn make_frequency_table(
     map
 }
 
-pub fn make_n_gram(n: usize, alphabet: &[char]) -> Vec<String> {
+/// `make_n_gram_on_content` -- constructs from alphabet n-grams
+pub fn make_n_gram_on_content(chunks: usize, content: &String) -> Vec<String> {
+    //trim string to specific size
+    let mut content = content.clone();
+    if content.chars().count() % chunks != 0 {
+        let str_len = content.chars().count();
+        for _ in 0..(str_len % chunks) {
+            content.pop().unwrap();
+        }
+    }
+
+    let mut chars = content.chars();
+    (0..)
+        .map(|_| chars.by_ref().take(chunks).collect::<String>())
+        .take_while(|s| {
+            !s.is_empty()
+        })
+        .collect::<Vec<_>>()
+}
+
+
+/// `make_n_gram_on_alphabet` -- constructs from alphabet n-grams
+/// it's like all possible combinations of our alphabet
+/// n = 1 -- 'аа', 'аб', 'ав', 'аг', ...
+pub fn make_n_gram_on_alphabet(n: usize, alphabet: &[char]) -> Vec<String> {
     let mut vec = alphabet
         .iter()
         .map(|x| x.to_string())
