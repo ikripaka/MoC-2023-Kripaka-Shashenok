@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 regex = { version = "1.10.2", features = [] }
 dotenv = "0.15.0"
+rayon = "1.8.0"
+rand = "0.8.5"
