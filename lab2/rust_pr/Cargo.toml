@@ -10,3 +10,4 @@ regex = { version = "1.10.2", features = [] }
 dotenv = "0.15.0"
 rayon = "1.8.0"
 rand = "0.8.5"
+lazy_static = { version = "1.4.0", features = [] }

@@ -7,10 +7,10 @@ use std::io::{BufRead, BufReader, BufWriter, Read, Write};
 
 fn main() {
     dotenv().ok();
-    format_file(
-        std::env::var("SOURCE_FILENAME").unwrap().as_mut_str(),
-        std::env::var("OUTPUT_FILENAME").unwrap().as_mut_str(),
-    );
+    // format_file(
+    //     std::env::var("SOURCE_FILENAME").unwrap().as_mut_str(),
+    //     std::env::var("OUTPUT_FILENAME").unwrap().as_mut_str(),
+    // );
     let filepath = std::env::var("OUTPUT_FILENAME")
         .unwrap()
         .as_str()

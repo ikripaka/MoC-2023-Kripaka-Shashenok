@@ -1,14 +1,17 @@
+use dotenv::dotenv;
+use rand::{thread_rng, Rng};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Read, Write};
-use rand::{thread_rng, Rng};
 
+use crate::{UKR_ALPHABET, UKR_ALPHABET_REVERSE_MAP};
 use regex::Regex;
-use crate::UKR_ALPHABET;
 
 #[inline]
 fn generate_random_l_gram(l: usize, alphabet_len: usize, alphabet: &[char]) -> String {
-    (0..l).map(|x| alphabet[thread_rng().gen_range(0..alphabet_len)]).collect()
+    (0..l)
+        .map(|x| alphabet[thread_rng().gen_range(0..alphabet_len)])
+        .collect()
 }
 
 #[inline]
@@ -16,20 +19,81 @@ fn slice_u8_to_string(slice: &[u8], alphabet: &[char]) -> String {
     slice.iter().map(|x| alphabet[*x as usize]).collect()
 }
 
-fn recurrent_generation_n_l_gram(acc: usize, l: usize, n: usize, s_1: &[u8], s_2: &[u8], alphabet_len: usize, alphabet: &[char], res: &mut Vec<String>) {
-    if acc < n {
-        let (s_0, str) = (0..s_1.len()).into_iter().map(|i| {
-            let new_index = (s_1[i] + s_2[i]) % alphabet_len;
-            (new_index, alphabet[new_index as usize])
-        }).collect::<(Vec<u8>, String)>();
-        res.push(str);
-        recurrent_generation_n_l_gram(acc + 1, l, n, &s_0, s_1, alphabet_len, alphabet, res)
-    }
+#[inline]
+fn gen_random_vec(len: usize, gen_range: u8) -> Vec<u8> {
+    (0..len)
+        .into_iter()
+        .map(|_| thread_rng().gen_range(0..gen_range))
+        .collect::<Vec<u8>>()
+}
+
+#[inline]
+fn gen_random_in_vec_ref(vec: &mut Vec<u8>, len: usize, gen_range: u8) {
+    *vec = (0..len)
+        .into_iter()
+        .map(|_| thread_rng().gen_range(0..gen_range))
+        .collect::<Vec<u8>>()
+}
+
+#[inline]
+fn slice_into_string(slice: &[u8], alphabet: &[char]) -> String {
+    slice.iter().map(|x| alphabet[*x as usize]).collect()
+}
+
+
+/// Vigenère cipher
+/// (a) DISTORSION OF THE TEXT
+pub fn vigenere_cipher_distortion(r: usize, l_grams: &[String], alphabet: &[char]) -> (Vec<String>, Vec<u8>) {
+    let distore_n_grams = |vec: &mut Vec<String>, slice: &[String], key: &[u8], r: usize, alphabet_len: u8| {
+        for l_gram in slice {
+            vec.push(slice_into_string(&l_gram
+                .chars().enumerate()
+                .map(|(i, c)| (*UKR_ALPHABET_REVERSE_MAP.get(&c).unwrap() + key[i % r] ) % alphabet_len)
+                .collect::<Vec<u8>>(), alphabet))
+        }
+    };
+
+    let alphabet_len = alphabet.len() as u8;
+    let mut key = gen_random_vec(r, alphabet_len);
+    let (mut left, mut right) = (Vec::new(), Vec::new());
+    rayon::join(
+        || distore_n_grams(&mut left, &l_grams[0..(l_grams.len() >> 1)], &key, r, alphabet_len as u8),
+        || distore_n_grams(&mut right, &l_grams[(l_grams.len() >> 1)..], &key, r, alphabet_len as u8),
+    );
+    left.extend_from_slice(&right);
+    (left, key)
+}
+
+/// affine substitution
+/// (б) DISTORSION OF THE TEXT
+pub fn generate_affine_distortion(l: usize, l_grams: &[String], alphabet: &[char]) -> (Vec<String>, (Vec<u8>, Vec<u8>)) {
+    let distore_n_grams = |vec: &mut Vec<String>, slice: &[String], a: &[u8], b: &[u8], alphabet_len: u16| {
+        for l_gram in slice {
+            vec.push(slice_into_string(&l_gram
+                .chars().enumerate()
+                .map(|(i, c)| ((a[i] as u16 * *UKR_ALPHABET_REVERSE_MAP.get(&c).unwrap() as u16 + b[i] as u16) % alphabet_len) as u8)
+                .collect::<Vec<u8>>(), alphabet))
+        }
+    };
+
+    let alphabet_len = alphabet.len() as u8;
+    let (mut a, mut b) = (Vec::new(), Vec::new());
+    rayon::join(
+        || gen_random_in_vec_ref(&mut a, l, alphabet_len),
+        || gen_random_in_vec_ref(&mut b, l, alphabet_len),
+    );
+    let (mut left, mut right) = (Vec::new(), Vec::new());
+    rayon::join(
+        || distore_n_grams(&mut left, &l_grams[0..(l_grams.len() >> 1)], &a, &b, alphabet_len as u16),
+        || distore_n_grams(&mut right, &l_grams[(l_grams.len() >> 1)..], &a, &b, alphabet_len as u16),
+    );
+    left.extend_from_slice(&right);
+    (left, (a, b))
 }
 
 /// `generate_random_n_l_gram` -- generates `n` random `l`-grams
 /// (в) DISTORSION OF THE TEXT
-pub fn generate_random_n_l_grams(l: usize, acc: usize, n: usize, alphabet: &[char]) -> Vec<String> {
+pub fn generate_random_n_l_grams(l: usize, n: usize, alphabet: &[char]) -> Vec<String> {
     let mut res = Vec::new();
     let alphabet_len = alphabet.len();
     for _ in 0..n {
@@ -43,21 +107,44 @@ pub fn generate_random_n_l_grams(l: usize, acc: usize, n: usize, alphabet: &[cha
 pub fn recurrent_generation_n_l_grams(l: usize, n: usize, alphabet: &[char]) -> Vec<String> {
     let alphabet_len = alphabet.len();
     let mut res = Vec::new();
-    let s_1 = (0..l).thread_rng().gen_range(0..alphabet_len).collect::<Vec<u8>>();
-    let s_2 = (0..l).thread_rng().gen_range(0..alphabet_len).collect::<Vec<u8>>();
+
+    let (mut s_1, mut s_2) = (Vec::new(), Vec::new());
+    rayon::join(
+        || gen_random_in_vec_ref(&mut s_1, l, alphabet_len as u8),
+        || gen_random_in_vec_ref(&mut s_2, l, alphabet_len as u8),
+    );
+
     res.push(slice_u8_to_string(&s_1, alphabet));
     res.push(slice_u8_to_string(&s_2, alphabet));
-    recurrent_generation_n_l_gram(3, l, n, &s_1, &s_2, alphabet_len, alphabet, &mut res);
-
+    recurrent_generation_n_l_gram(2, l, n, &s_1, &s_2, alphabet_len as u8, alphabet, &mut res);
     res
 }
 
+fn recurrent_generation_n_l_gram(
+    acc: usize,
+    l: usize,
+    n: usize,
+    s_1: &[u8],
+    s_2: &[u8],
+    alphabet_len: u8,
+    alphabet: &[char],
+    res: &mut Vec<String>,
+) {
+    if acc < n {
+        let mut s_0 = Vec::new();
+        let mut str = String::new();
+        for i in 0..s_1.len() {
+            let new_index = (s_1[i] + s_2[i]) % alphabet_len;
+            s_0.push(new_index);
+            str.push(alphabet[new_index as usize]);
+        }
+        res.push(str);
+        recurrent_generation_n_l_gram(acc + 1, l, n, &s_0, s_1, alphabet_len, alphabet, res)
+    }
+}
 
 ///
-pub fn make_frequency_table(
-    filepath: &str,
-    chunks: usize,
-) -> HashMap<String, u64> {
+pub fn make_frequency_table(filepath: &str, chunks: usize) -> HashMap<String, u64> {
     let mut file = File::open(filepath).unwrap();
     let mut content = String::new();
     file.read_to_string(&mut content);
@@ -71,7 +158,9 @@ pub fn make_frequency_table(
             None => {
                 map.insert(x.clone(), 1);
             }
-            Some(val) => { map.insert(x.clone(), *val + 1); }
+            Some(val) => {
+                map.insert(x.clone(), *val + 1);
+            }
         }
     }
     map
@@ -91,15 +180,17 @@ pub fn make_n_gram_on_content(chunks: usize, content: String) -> Vec<String> {
     let mut chars = content.chars();
     (0..)
         .map(|_| chars.by_ref().take(chunks).collect::<String>())
-        .take_while(|s| {
-            !s.is_empty()
-        })
+        .take_while(|s| !s.is_empty())
         .collect::<Vec<_>>()
 }
 
-pub fn is_n_gram_forbidden(n_gram: &String, frequency_table: &HashMap<String, u64>, threshold: u64) -> bool {
+pub fn is_n_gram_forbidden(
+    n_gram: &str,
+    frequency_table: &HashMap<String, u64>,
+    threshold: u64,
+) -> bool {
     match frequency_table.get(n_gram) {
-        None => { true }
+        None => true,
         Some(val) => {
             if *val < threshold {
                 return true;
@@ -115,7 +206,6 @@ pub fn make_n_gram_on_file_content(filepath: &str, chunks: usize) -> Vec<String>
     file.read_to_string(&mut content);
     make_n_gram_on_content(chunks, content)
 }
-
 
 /// `make_n_gram_on_alphabet` -- constructs from alphabet n-grams
 /// it's like all possible combinations of our alphabet
@@ -151,7 +241,11 @@ pub fn make_probability_table(freq_table: &HashMap<String, u64>) -> HashMap<Stri
 pub fn calculate_entropy(prob_table: &HashMap<String, f64>) -> f64 {
     prob_table.iter().fold(0., |acc, (key, val)| {
         println!("acc: {acc}, val: {val}");
-        if *val == 0. { acc } else { acc - *val * (*val).log2() }
+        if *val == 0. {
+            acc
+        } else {
+            acc - *val * (*val).log2()
+        }
     })
 }
 
@@ -181,10 +275,64 @@ pub fn format_file(in_filepath: &str, out_filepath: &str) {
     writer.flush().unwrap();
 }
 
-
 #[test]
 fn generate_random_n_gram_test() {
-    let rand_gen_n_gram = generate_random_n_l_grams(10, 10, &UKR_ALPHABET);
+    let rand_gen_n_gram = generate_random_n_l_grams(100, 10, &UKR_ALPHABET);
 
     println!("random n_gram: {:?}", rand_gen_n_gram)
+}
+
+#[test]
+fn recurrent_gen_test() {
+    let recur = recurrent_generation_n_l_grams(100, 10, &UKR_ALPHABET);
+
+    println!("recurrent n_gram: {:?}", recur)
+}
+
+#[test]
+fn affine_distortion_gen_test() {
+    dotenv().ok();
+    let filepath = std::env::var("OUTPUT_FILENAME")
+        .unwrap()
+        .as_str()
+        .to_string();
+    let chunks = 2;
+    let n_grams = make_n_gram_on_file_content(&filepath, chunks);
+    let affine_distortion = generate_affine_distortion(chunks, &n_grams[0..10], &UKR_ALPHABET);
+    println!(
+        "original: {:?} \n\t\t affine distorted n_gram: {:?} \n\t\t{:?}",
+        &n_grams[0..10],
+        affine_distortion,
+        &n_grams[0..10]
+            .iter()
+            .map(|c| c
+                .chars()
+                .map(|c| *UKR_ALPHABET_REVERSE_MAP.get(&c).unwrap())
+                .collect::<Vec<u8>>())
+            .collect::<Vec<Vec<u8>>>()
+    )
+}
+
+#[test]
+fn vigenere_distortion_test() {
+    dotenv().ok();
+    let filepath = std::env::var("OUTPUT_FILENAME")
+        .unwrap()
+        .as_str()
+        .to_string();
+    let chunks = 2;
+    let n_grams = make_n_gram_on_file_content(&filepath, chunks);
+    let vigenere_cipher_distortion = vigenere_cipher_distortion(1,  &n_grams[0..10], &UKR_ALPHABET);
+    println!(
+        "original: {:?} \n\t\t vigenere cipher distortion n_gram: {:?} \n\t\t{:?}",
+        &n_grams[0..10],
+        vigenere_cipher_distortion,
+        &n_grams[0..10]
+            .iter()
+            .map(|c| c
+                .chars()
+                .map(|c| *UKR_ALPHABET_REVERSE_MAP.get(&c).unwrap())
+                .collect::<Vec<u8>>())
+            .collect::<Vec<Vec<u8>>>()
+    )
 }
