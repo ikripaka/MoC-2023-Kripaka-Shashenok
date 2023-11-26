@@ -1,3 +1,4 @@
+use chrono::Local;
 use dotenv::dotenv;
 use rand::{thread_rng, Rng};
 use std::collections::HashMap;
@@ -7,6 +8,7 @@ use std::io::{BufRead, BufReader, BufWriter, Read, Write};
 use crate::{UKR_ALPHABET, UKR_ALPHABET_REVERSE_MAP};
 use regex::Regex;
 
+// =================== TEXT DISTORTION BEGINNING ===================
 #[inline]
 fn generate_random_l_gram(l: usize, alphabet_len: usize, alphabet: &[char]) -> String {
     (0..l)
@@ -40,25 +42,51 @@ fn slice_into_string(slice: &[u8], alphabet: &[char]) -> String {
     slice.iter().map(|x| alphabet[*x as usize]).collect()
 }
 
-
 /// Vigenère cipher
 /// (a) DISTORSION OF THE TEXT
-pub fn vigenere_cipher_distortion(r: usize, l_grams: &[String], alphabet: &[char]) -> (Vec<String>, Vec<u8>) {
-    let distore_n_grams = |vec: &mut Vec<String>, slice: &[String], key: &[u8], r: usize, alphabet_len: u8| {
-        for l_gram in slice {
-            vec.push(slice_into_string(&l_gram
-                .chars().enumerate()
-                .map(|(i, c)| (*UKR_ALPHABET_REVERSE_MAP.get(&c).unwrap() + key[i % r] ) % alphabet_len)
-                .collect::<Vec<u8>>(), alphabet))
-        }
-    };
+pub fn vigenere_cipher_distortion(
+    r: usize,
+    l_grams: &[String],
+    alphabet: &[char],
+) -> (Vec<String>, Vec<u8>) {
+    let distore_n_grams =
+        |vec: &mut Vec<String>, slice: &[String], key: &[u8], r: usize, alphabet_len: u8| {
+            for l_gram in slice {
+                vec.push(slice_into_string(
+                    &l_gram
+                        .chars()
+                        .enumerate()
+                        .map(|(i, c)| {
+                            (*UKR_ALPHABET_REVERSE_MAP.get(&c).unwrap() + key[i % r]) % alphabet_len
+                        })
+                        .collect::<Vec<u8>>(),
+                    alphabet,
+                ))
+            }
+        };
 
     let alphabet_len = alphabet.len() as u8;
     let mut key = gen_random_vec(r, alphabet_len);
     let (mut left, mut right) = (Vec::new(), Vec::new());
     rayon::join(
-        || distore_n_grams(&mut left, &l_grams[0..(l_grams.len() >> 1)], &key, r, alphabet_len as u8),
-        || distore_n_grams(&mut right, &l_grams[(l_grams.len() >> 1)..], &key, r, alphabet_len as u8),
+        || {
+            distore_n_grams(
+                &mut left,
+                &l_grams[0..(l_grams.len() >> 1)],
+                &key,
+                r,
+                alphabet_len as u8,
+            )
+        },
+        || {
+            distore_n_grams(
+                &mut right,
+                &l_grams[(l_grams.len() >> 1)..],
+                &key,
+                r,
+                alphabet_len as u8,
+            )
+        },
     );
     left.extend_from_slice(&right);
     (left, key)
@@ -66,15 +94,28 @@ pub fn vigenere_cipher_distortion(r: usize, l_grams: &[String], alphabet: &[char
 
 /// affine substitution
 /// (б) DISTORSION OF THE TEXT
-pub fn generate_affine_distortion(l: usize, l_grams: &[String], alphabet: &[char]) -> (Vec<String>, (Vec<u8>, Vec<u8>)) {
-    let distore_n_grams = |vec: &mut Vec<String>, slice: &[String], a: &[u8], b: &[u8], alphabet_len: u16| {
-        for l_gram in slice {
-            vec.push(slice_into_string(&l_gram
-                .chars().enumerate()
-                .map(|(i, c)| ((a[i] as u16 * *UKR_ALPHABET_REVERSE_MAP.get(&c).unwrap() as u16 + b[i] as u16) % alphabet_len) as u8)
-                .collect::<Vec<u8>>(), alphabet))
-        }
-    };
+pub fn generate_affine_distortion(
+    l: usize,
+    l_grams: &[String],
+    alphabet: &[char],
+) -> (Vec<String>, (Vec<u8>, Vec<u8>)) {
+    let distore_n_grams =
+        |vec: &mut Vec<String>, slice: &[String], a: &[u8], b: &[u8], alphabet_len: u16| {
+            for l_gram in slice {
+                vec.push(slice_into_string(
+                    &l_gram
+                        .chars()
+                        .enumerate()
+                        .map(|(i, c)| {
+                            ((a[i] as u16 * *UKR_ALPHABET_REVERSE_MAP.get(&c).unwrap() as u16
+                                + b[i] as u16)
+                                % alphabet_len) as u8
+                        })
+                        .collect::<Vec<u8>>(),
+                    alphabet,
+                ))
+            }
+        };
 
     let alphabet_len = alphabet.len() as u8;
     let (mut a, mut b) = (Vec::new(), Vec::new());
@@ -84,8 +125,24 @@ pub fn generate_affine_distortion(l: usize, l_grams: &[String], alphabet: &[char
     );
     let (mut left, mut right) = (Vec::new(), Vec::new());
     rayon::join(
-        || distore_n_grams(&mut left, &l_grams[0..(l_grams.len() >> 1)], &a, &b, alphabet_len as u16),
-        || distore_n_grams(&mut right, &l_grams[(l_grams.len() >> 1)..], &a, &b, alphabet_len as u16),
+        || {
+            distore_n_grams(
+                &mut left,
+                &l_grams[0..(l_grams.len() >> 1)],
+                &a,
+                &b,
+                alphabet_len as u16,
+            )
+        },
+        || {
+            distore_n_grams(
+                &mut right,
+                &l_grams[(l_grams.len() >> 1)..],
+                &a,
+                &b,
+                alphabet_len as u16,
+            )
+        },
     );
     left.extend_from_slice(&right);
     (left, (a, b))
@@ -143,13 +200,33 @@ fn recurrent_generation_n_l_gram(
     }
 }
 
+// =================== TEXT DISTORTION ENDING ===================
+
 ///
-pub fn make_frequency_table(filepath: &str, chunks: usize) -> HashMap<String, u64> {
+pub fn make_frequency_table_from_file(filepath: &str, chunks: usize) -> HashMap<String, u64> {
     let mut file = File::open(filepath).unwrap();
     let mut content = String::new();
     file.read_to_string(&mut content);
 
     let sub_strings = make_n_gram_on_content(chunks, content);
+
+    let mut map = HashMap::new();
+
+    for x in sub_strings {
+        match map.get(&x) {
+            None => {
+                map.insert(x.clone(), 1);
+            }
+            Some(val) => {
+                map.insert(x.clone(), *val + 1);
+            }
+        }
+    }
+    map
+}
+
+pub fn make_frequency_table(content: &str, chunks: usize) -> HashMap<String, u64> {
+    let sub_strings = make_n_gram_on_content_from_str(chunks, content);
 
     let mut map = HashMap::new();
 
@@ -184,7 +261,25 @@ pub fn make_n_gram_on_content(chunks: usize, content: String) -> Vec<String> {
         .collect::<Vec<_>>()
 }
 
-pub fn is_n_gram_forbidden(
+/// `make_n_gram_on_content` -- constructs from given content given length symbols chunks
+pub fn make_n_gram_on_content_from_str(chunks: usize, content: &str) -> Vec<String> {
+    //trim string to specific size
+    let mut content = content.to_string();
+    if content.chars().count() % chunks != 0 {
+        let str_len = content.chars().count();
+        for _ in 0..(str_len % chunks) {
+            content.pop().unwrap();
+        }
+    }
+
+    let mut chars = content.chars();
+    (0..)
+        .map(|_| chars.by_ref().take(chunks).collect::<String>())
+        .take_while(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+}
+
+pub fn is_n_gram_prohibited_with_ngrams(
     n_gram: &str,
     frequency_table: &HashMap<String, u64>,
     threshold: u64,
@@ -198,6 +293,47 @@ pub fn is_n_gram_forbidden(
             false
         }
     }
+}
+
+pub fn is_n_gram_prohibited_with_custom_l_grams(
+    n_gram: &str,
+    frequency_table: &HashMap<String, u64>,
+    threshold: u64,
+    chunks: usize,
+) -> bool {
+    for i in 0..chunks {
+        let mut counter = n_gram.chars().into_iter().count() - i;
+        let mut char_iter = n_gram.chars().into_iter();
+        let _skip = (0..i)
+            .into_iter()
+            .map(|_| char_iter.next().unwrap())
+            .collect::<String>();
+        while counter > chunks {
+            match frequency_table.get(
+                &(0..chunks)
+                    .into_iter()
+                    .map(|x| match char_iter.next() {
+                        None => {
+                            println!("hi bug!");
+                            'a'
+                        }
+                        Some(c) => {c}
+                    })
+                    .collect::<String>(),
+            ) {
+                None => return true,
+                Some(val) => {
+                    if *val < threshold {
+                        return true;
+                    }
+                    // false
+                    // then looking for another chunk_grams
+                }
+            }
+            counter -= chunks;
+        }
+    }
+    false
 }
 
 pub fn make_n_gram_on_file_content(filepath: &str, chunks: usize) -> Vec<String> {
@@ -322,7 +458,7 @@ fn vigenere_distortion_test() {
         .to_string();
     let chunks = 2;
     let n_grams = make_n_gram_on_file_content(&filepath, chunks);
-    let vigenere_cipher_distortion = vigenere_cipher_distortion(1,  &n_grams[0..10], &UKR_ALPHABET);
+    let vigenere_cipher_distortion = vigenere_cipher_distortion(1, &n_grams[0..10], &UKR_ALPHABET);
     println!(
         "original: {:?} \n\t\t vigenere cipher distortion n_gram: {:?} \n\t\t{:?}",
         &n_grams[0..10],
@@ -335,4 +471,27 @@ fn vigenere_distortion_test() {
                 .collect::<Vec<u8>>())
             .collect::<Vec<Vec<u8>>>()
     )
+}
+
+#[test]
+fn custom_forbidden_grams_test() {
+    let not_forbidden = "типопродалисьсподіваючисьзатенагородипанипольськіневипускалисвоїхдочокздо";
+    let forbidden = "бтмчждлрпвфцкншщзхїґґбтмчждлрпвфцкншщзхїґґбтмчждлрпвфцкншщзхїґґбтмчждлрп";
+
+    dotenv().ok();
+    let filepath = std::env::var("OUTPUT_FILENAME")
+        .unwrap()
+        .as_str()
+        .to_string();
+    let (chunks, threshold) = (2, 10);
+    let freq_table = make_frequency_table_from_file(&filepath, chunks);
+    let time_prev = Local::now();
+    println!(
+        "is_forbidden forbidden: {:?} \n\t\t is_forbidden real: {:?}",
+        // is_n_gram_forbidden_with_custom_l_grams(forbidden, &freq_table,threshold, chunks),
+        "",
+        is_n_gram_prohibited_with_custom_l_grams(not_forbidden, &freq_table, threshold, chunks)
+    );
+    let time_after = Local::now();
+    println!("{}", (time_after - time_prev).num_milliseconds())
 }
