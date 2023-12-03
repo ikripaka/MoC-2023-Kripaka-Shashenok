@@ -162,32 +162,17 @@ pub fn generate_random_n_l_grams(l: usize, n: usize, alphabet: &[char]) -> Vec<S
 /// `recurrent_generation_n_l_grams` -- generates `n` `l`-grams via recurrent formula
 /// (г) DISTORSION OF THE TEXT
 pub fn recurrent_generation_n_l_grams(l: usize, n: usize, alphabet: &[char]) -> Vec<String> {
-    let alphabet_len = alphabet.len();
+    let alphabet_len = alphabet.len() as u8;
     let mut res = Vec::new();
 
     let (mut s_1, mut s_2) = (Vec::new(), Vec::new());
     rayon::join(
-        || gen_random_in_vec_ref(&mut s_1, l, alphabet_len as u8),
-        || gen_random_in_vec_ref(&mut s_2, l, alphabet_len as u8),
+        || gen_random_in_vec_ref(&mut s_1, l, alphabet_len),
+        || gen_random_in_vec_ref(&mut s_2, l, alphabet_len),
     );
-
     res.push(slice_u8_to_string(&s_1, alphabet));
     res.push(slice_u8_to_string(&s_2, alphabet));
-    recurrent_generation_n_l_gram(2, l, n, &s_1, &s_2, alphabet_len as u8, alphabet, &mut res);
-    res
-}
-
-fn recurrent_generation_n_l_gram(
-    acc: usize,
-    l: usize,
-    n: usize,
-    s_1: &[u8],
-    s_2: &[u8],
-    alphabet_len: u8,
-    alphabet: &[char],
-    res: &mut Vec<String>,
-) {
-    if acc < n {
+    for _ in 2..n {
         let mut s_0 = Vec::new();
         let mut str = String::new();
         for i in 0..s_1.len() {
@@ -196,8 +181,10 @@ fn recurrent_generation_n_l_gram(
             str.push(alphabet[new_index as usize]);
         }
         res.push(str);
-        recurrent_generation_n_l_gram(acc + 1, l, n, &s_0, s_1, alphabet_len, alphabet, res)
+        s_2 = s_1.clone();
+        s_1 = s_0;
     }
+    res
 }
 
 // =================== TEXT DISTORTION ENDING ===================
@@ -317,7 +304,7 @@ pub fn is_n_gram_prohibited_with_custom_l_grams(
                             println!("hi bug!");
                             'a'
                         }
-                        Some(c) => {c}
+                        Some(c) => c,
                     })
                     .collect::<String>(),
             ) {
@@ -385,6 +372,15 @@ pub fn calculate_entropy(prob_table: &HashMap<String, f64>) -> f64 {
     })
 }
 
+pub fn calculate_probs(h0: u64, h1: u64, total_l_grams_amount: usize) -> (f64, f64) {
+    println!("total_l_grams: {total_l_grams_amount}");
+    let all_cases = total_l_grams_amount as f64;
+    let (p_h_0, p_h_1) = (h0 as f64 / all_cases, h1 as f64 / all_cases);
+    let p_h_0_1 = p_h_0 * p_h_1;
+    println!("p_h_0_1: {p_h_0_1}, p_h_0: {p_h_0}, p_h_1:{p_h_1}");
+    (p_h_0_1 / p_h_0, p_h_0_1 / p_h_1)
+}
+
 /// **format_file** -- formats file and deletes all redundant symbol
 /// except:
 ///     * ukrainian alphabet
@@ -420,7 +416,7 @@ fn generate_random_n_gram_test() {
 
 #[test]
 fn recurrent_gen_test() {
-    let recur = recurrent_generation_n_l_grams(100, 10, &UKR_ALPHABET);
+    let recur = recurrent_generation_n_l_grams(10, 10, &UKR_ALPHABET);
 
     println!("recurrent n_gram: {:?}", recur)
 }
