@@ -29,43 +29,43 @@ pub fn run(filepath: &str) {
         mut res1_3,
         mut res1_4,
     ) = Default::default();
-    // let (
-    //     mut res2_0,
-    //     mut res2_1_r1,
-    //     mut res2_1_r2,
-    //     mut res2_1_r3,
-    //     mut res2_2,
-    //     mut res2_3,
-    //     mut res2_4,
-    // ) = Default::default();
-    //
-    // let (
-    //     mut res3_0,
-    //     mut res3_1_r1,
-    //     mut res3_1_r2,
-    //     mut res3_1_r3,
-    //     mut res3_2,
-    //     mut res3_3,
-    //     mut res3_4,
-    // ) = Default::default();
-    // let (
-    //     mut res4_0,
-    //     mut res4_1_r1,
-    //     mut res4_1_r2,
-    //     mut res4_1_r3,
-    //     mut res4_2,
-    //     mut res4_3,
-    //     mut res4_4,
-    // ) = Default::default();
+    let (
+        mut res2_0,
+        mut res2_1_r1,
+        mut res2_1_r2,
+        mut res2_1_r3,
+        mut res2_2,
+        mut res2_3,
+        mut res2_4,
+    ) = Default::default();
+
+    let (
+        mut res3_0,
+        mut res3_1_r1,
+        mut res3_1_r2,
+        mut res3_1_r3,
+        mut res3_2,
+        mut res3_3,
+        mut res3_4,
+    ) = Default::default();
+    let (
+        mut res4_0,
+        mut res4_1_r1,
+        mut res4_1_r2,
+        mut res4_1_r3,
+        mut res4_2,
+        mut res4_3,
+        mut res4_4,
+    ) = Default::default();
 
     // calculating frequency tables for text
     let (
         mut bigram,
         mut three_gram,
         mut freq_table_l1,
-        // mut freq_table_l2,
-        // mut freq_table_l3,
-        // mut freq_table_l4,
+        mut freq_table_l2,
+        mut freq_table_l3,
+        mut freq_table_l4,
     ) = Default::default();
     rayon::scope(|s| {
         s.spawn(|_s| {
@@ -77,29 +77,29 @@ pub fn run(filepath: &str) {
         s.spawn(|_s| {
             freq_table_l1 = make_frequency_table(&content, L1);
         });
-        // s.spawn(|_s| {
-        //     freq_table_l2 = make_frequency_table(&content, L2);
-        // });
-        // s.spawn(|_s| {
-        //     freq_table_l3 = make_frequency_table(&content, L3);
-        // });
-        // s.spawn(|_s| {
-        //     freq_table_l4 = make_frequency_table(&content, L4);
-        // });
+        s.spawn(|_s| {
+            freq_table_l2 = make_frequency_table(&content, L2);
+        });
+        s.spawn(|_s| {
+            freq_table_l3 = make_frequency_table(&content, L3);
+        });
+        s.spawn(|_s| {
+            freq_table_l4 = make_frequency_table(&content, L4);
+        });
     });
     println!("Frequency tables are calculated (criterion_1_1)");
 
     // gaining real frequency tables for detection of prohibited n grams
     let (
         mut freq_table_prh_l1,
-        // mut freq_table_prh_l2,
-        // mut freq_table_prh_l3,
-        // mut freq_table_prh_l4,
+        mut freq_table_prh_l2,
+        mut freq_table_prh_l3,
+        mut freq_table_prh_l4,
     ) = Default::default();
     freq_table_prh_l1 = vec![&bigram, &three_gram, &freq_table_l1];
-    // freq_table_prh_l2 = vec![&bigram, &three_gram, &freq_table_l2];
-    // freq_table_prh_l3 = vec![&bigram, &three_gram, &freq_table_l3];
-    // freq_table_prh_l4 = vec![&bigram, &three_gram, &freq_table_l4];
+    freq_table_prh_l2 = vec![&bigram, &three_gram, &freq_table_l2];
+    freq_table_prh_l3 = vec![&bigram, &three_gram, &freq_table_l3];
+    freq_table_prh_l4 = vec![&bigram, &three_gram, &freq_table_l4];
     println!("Gained real frequency tables for detection of prohibited n grams (criterion_1_1)");
 
     let (mut n_gram_l1, mut n_gram_l2, mut n_gram_l3, mut n_gram_l4): (
@@ -112,15 +112,15 @@ pub fn run(filepath: &str) {
         s.spawn(|_s| {
             n_gram_l1 = make_n_gram_on_content_from_str(L1, &content);
         });
-        // s.spawn(|_s| {
-        //     n_gram_l2 = make_n_gram_on_content_from_str(L2, &content);
-        // });
-        // s.spawn(|_s| {
-        //     n_gram_l3 = make_n_gram_on_content_from_str(L3, &content);
-        // });
-        // s.spawn(|_s| {
-        //     n_gram_l4 = make_n_gram_on_content_from_str(L4, &content);
-        // });
+        s.spawn(|_s| {
+            n_gram_l2 = make_n_gram_on_content_from_str(L2, &content);
+        });
+        s.spawn(|_s| {
+            n_gram_l3 = make_n_gram_on_content_from_str(L3, &content);
+        });
+        s.spawn(|_s| {
+            n_gram_l4 = make_n_gram_on_content_from_str(L4, &content);
+        });
     });
     println!("N grams are made (criterion_1_1)");
 
@@ -132,30 +132,30 @@ pub fn run(filepath: &str) {
         mut distorted_n_grams_l1_3,
         mut distorted_n_grams_l1_4,
     ) = Default::default();
-    // let (
-    //     mut distorted_n_grams_l2_1_r1,
-    //     mut distorted_n_grams_l2_1_r2,
-    //     mut distorted_n_grams_l2_1_r3,
-    //     mut distorted_n_grams_l2_2,
-    //     mut distorted_n_grams_l2_3,
-    //     mut distorted_n_grams_l2_4,
-    // ) = Default::default();
-    // let (
-    //     mut distorted_n_grams_l3_1_r1,
-    //     mut distorted_n_grams_l3_1_r2,
-    //     mut distorted_n_grams_l3_1_r3,
-    //     mut distorted_n_grams_l3_2,
-    //     mut distorted_n_grams_l3_3,
-    //     mut distorted_n_grams_l3_4,
-    // ) = Default::default();
-    // let (
-    //     mut distorted_n_grams_l4_1_r1,
-    //     mut distorted_n_grams_l4_1_r2,
-    //     mut distorted_n_grams_l4_1_r3,
-    //     mut distorted_n_grams_l4_2,
-    //     mut distorted_n_grams_l4_3,
-    //     mut distorted_n_grams_l4_4,
-    // ) = Default::default();
+    let (
+        mut distorted_n_grams_l2_1_r1,
+        mut distorted_n_grams_l2_1_r2,
+        mut distorted_n_grams_l2_1_r3,
+        mut distorted_n_grams_l2_2,
+        mut distorted_n_grams_l2_3,
+        mut distorted_n_grams_l2_4,
+    ) = Default::default();
+    let (
+        mut distorted_n_grams_l3_1_r1,
+        mut distorted_n_grams_l3_1_r2,
+        mut distorted_n_grams_l3_1_r3,
+        mut distorted_n_grams_l3_2,
+        mut distorted_n_grams_l3_3,
+        mut distorted_n_grams_l3_4,
+    ) = Default::default();
+    let (
+        mut distorted_n_grams_l4_1_r1,
+        mut distorted_n_grams_l4_1_r2,
+        mut distorted_n_grams_l4_1_r3,
+        mut distorted_n_grams_l4_2,
+        mut distorted_n_grams_l4_3,
+        mut distorted_n_grams_l4_4,
+    ) = Default::default();
 
     rayon::scope(|s| {
         s.spawn(|_s| {
@@ -178,62 +178,62 @@ pub fn run(filepath: &str) {
             distorted_n_grams_l1_4 = recurrent_generation_n_l_grams(L1, N1, &UKR_ALPHABET);
         });
 
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l2_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l2, &UKR_ALPHABET);
-        // });
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l2_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l2, &UKR_ALPHABET);
-        // });
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l2_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l2, &UKR_ALPHABET);
-        // });
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l2_2 = generate_affine_distortion(L2, &n_gram_l2, &UKR_ALPHABET);
-        // });
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l2_3 = generate_random_n_l_grams(L2, N1, &UKR_ALPHABET);
-        // });
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l2_4 = recurrent_generation_n_l_grams(L2, N1, &UKR_ALPHABET);
-        // });
+        s.spawn(|_s| {
+            distorted_n_grams_l2_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l2, &UKR_ALPHABET);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l2_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l2, &UKR_ALPHABET);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l2_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l2, &UKR_ALPHABET);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l2_2 = generate_affine_distortion(L2, &n_gram_l2, &UKR_ALPHABET);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l2_3 = generate_random_n_l_grams(L2, N1, &UKR_ALPHABET);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l2_4 = recurrent_generation_n_l_grams(L2, N1, &UKR_ALPHABET);
+        });
 
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l3_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l3, &UKR_ALPHABET);
-        // });
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l3_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l3, &UKR_ALPHABET);
-        // });
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l3_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l3, &UKR_ALPHABET);
-        // });
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l3_2 = generate_affine_distortion(L3, &n_gram_l3, &UKR_ALPHABET);
-        // });
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l3_3 = generate_random_n_l_grams(L3, N1, &UKR_ALPHABET);
-        // });
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l3_4 = recurrent_generation_n_l_grams(L3, N1, &UKR_ALPHABET);
-        // });
-        //
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l4_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l4, &UKR_ALPHABET);
-        // });
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l4_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l4, &UKR_ALPHABET);
-        // });
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l4_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l4, &UKR_ALPHABET);
-        // });
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l4_2 = generate_affine_distortion(L4, &n_gram_l4, &UKR_ALPHABET);
-        // });
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l4_3 = generate_random_n_l_grams(L4, N1, &UKR_ALPHABET);
-        // });
-        // s.spawn(|_s| {
-        //     distorted_n_grams_l4_4 = recurrent_generation_n_l_grams(L4, N1, &UKR_ALPHABET);
-        // });
+        s.spawn(|_s| {
+            distorted_n_grams_l3_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l3, &UKR_ALPHABET);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l3_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l3, &UKR_ALPHABET);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l3_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l3, &UKR_ALPHABET);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l3_2 = generate_affine_distortion(L3, &n_gram_l3, &UKR_ALPHABET);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l3_3 = generate_random_n_l_grams(L3, N1, &UKR_ALPHABET);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l3_4 = recurrent_generation_n_l_grams(L3, N1, &UKR_ALPHABET);
+        });
+
+        s.spawn(|_s| {
+            distorted_n_grams_l4_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l4, &UKR_ALPHABET);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l4_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l4, &UKR_ALPHABET);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l4_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l4, &UKR_ALPHABET);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l4_2 = generate_affine_distortion(L4, &n_gram_l4, &UKR_ALPHABET);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l4_3 = generate_random_n_l_grams(L4, N1, &UKR_ALPHABET);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l4_4 = recurrent_generation_n_l_grams(L4, N1, &UKR_ALPHABET);
+        });
     });
     println!("Distorted N grams are made (criterion_1_1)");
 
@@ -248,6 +248,7 @@ pub fn run(filepath: &str) {
             );
         });
         s.spawn(|_s| {
+            let time_prev_local = Local::now();
             res1_1_r1 = criterion_1_1(
                 &freq_table_prh_l1,
                 &distorted_n_grams_l1_1_r1.0,
@@ -255,8 +256,13 @@ pub fn run(filepath: &str) {
                 default_threshold,
                 k_p,
             );
+            println!(
+                "res1_1_r1 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            )
         });
         s.spawn(|_s| {
+            let time_prev_local = Local::now();
             res1_1_r2 = criterion_1_1(
                 &freq_table_prh_l1,
                 &distorted_n_grams_l1_1_r2.0,
@@ -264,8 +270,13 @@ pub fn run(filepath: &str) {
                 default_threshold,
                 k_p,
             );
+            println!(
+                "res1_1_r2 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            )
         });
         s.spawn(|_s| {
+            let time_prev_local = Local::now();
             res1_1_r3 = criterion_1_1(
                 &freq_table_prh_l1,
                 &distorted_n_grams_l1_1_r3.0,
@@ -273,8 +284,13 @@ pub fn run(filepath: &str) {
                 default_threshold,
                 k_p,
             );
+            println!(
+                "res1_1_r3 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            )
         });
         s.spawn(|_s| {
+            let time_prev_local = Local::now();
             res1_2 = criterion_1_1(
                 &freq_table_prh_l1,
                 &distorted_n_grams_l1_2.0,
@@ -282,8 +298,13 @@ pub fn run(filepath: &str) {
                 default_threshold,
                 k_p,
             );
+            println!(
+                "res1_2 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            )
         });
         s.spawn(|_s| {
+            let time_prev_local = Local::now();
             res1_3 = criterion_1_1(
                 &freq_table_prh_l1,
                 &distorted_n_grams_l1_3,
@@ -291,8 +312,13 @@ pub fn run(filepath: &str) {
                 default_threshold,
                 k_p,
             );
+            println!(
+                "res1_3 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            )
         });
         s.spawn(|_s| {
+            let time_prev_local = Local::now();
             res1_4 = criterion_1_1(
                 &freq_table_prh_l1,
                 &distorted_n_grams_l1_4,
@@ -300,269 +326,308 @@ pub fn run(filepath: &str) {
                 default_threshold,
                 k_p,
             );
+            println!(
+                "res1_4 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            )
         });
 
-        // s.spawn(|_s| {
-        //     res2_0 = criterion_1_1(
-        //         &freq_table_prh_l2,
-        //         &n_gram_l2,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L2],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //     res2_1_r1 = criterion_1_1(
-        //         &freq_table_prh_l2,
-        //         &distorted_n_grams_l2_1_r1.0,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L2],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //     res2_1_r2 = criterion_1_1(
-        //         &freq_table_prh_l2,
-        //         &distorted_n_grams_l2_1_r2.0,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L2],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //     res2_1_r3 = criterion_1_1(
-        //         &freq_table_prh_l2,
-        //         &distorted_n_grams_l2_1_r3.0,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L2],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //     res2_2 = criterion_1_1(
-        //         &freq_table_prh_l2,
-        //         &distorted_n_grams_l2_2.0,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L2],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //     res2_3 = criterion_1_1(
-        //         &freq_table_prh_l2,
-        //         &distorted_n_grams_l2_3,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L2],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //     res2_4 = criterion_1_1(
-        //         &freq_table_prh_l2,
-        //         &distorted_n_grams_l2_4,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L2],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        // });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res2_0 = criterion_1_1(
+                &freq_table_prh_l2,
+                &n_gram_l2,
+                &vec![L_BIGRAM, L_THREE_GRAM, L2],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res2_0 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            )
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res2_1_r1 = criterion_1_1(
+                &freq_table_prh_l2,
+                &distorted_n_grams_l2_1_r1.0,
+                &vec![L_BIGRAM, L_THREE_GRAM, L2],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res2_1_r1 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            )
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res2_1_r2 = criterion_1_1(
+                &freq_table_prh_l2,
+                &distorted_n_grams_l2_1_r2.0,
+                &vec![L_BIGRAM, L_THREE_GRAM, L2],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res2_1_r2 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            )
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res2_1_r3 = criterion_1_1(
+                &freq_table_prh_l2,
+                &distorted_n_grams_l2_1_r3.0,
+                &vec![L_BIGRAM, L_THREE_GRAM, L2],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res2_1_r3 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            )
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res2_2 = criterion_1_1(
+                &freq_table_prh_l2,
+                &distorted_n_grams_l2_2.0,
+                &vec![L_BIGRAM, L_THREE_GRAM, L2],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res2_2 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            )
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res2_3 = criterion_1_1(
+                &freq_table_prh_l2,
+                &distorted_n_grams_l2_3,
+                &vec![L_BIGRAM, L_THREE_GRAM, L2],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res2_3 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            )
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res2_4 = criterion_1_1(
+                &freq_table_prh_l2,
+                &distorted_n_grams_l2_4,
+                &vec![L_BIGRAM, L_THREE_GRAM, L2],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res2_4 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            );
+        });
 
-        // s.spawn(|_s| {
-        //     let time_prev_local = Local::now();
-        //     res3_0 = criterion_1_1(
-        //         &freq_table_prh_l3,
-        //         &n_gram_l3,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L3],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        //     println!(
-        //         "res3_0 FINISHED!! Time:{}",
-        //         (Local::now() - time_prev_local).num_minutes()
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //     let time_prev_local = Local::now();
-        //     res3_1_r1 = criterion_1_1(
-        //         &freq_table_prh_l3,
-        //         &distorted_n_grams_l3_1_r1.0,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L3],
-        //         default_threshold,
-        //         k_p,
-        //     );println!(
-        //         "res3_1_r1 FINISHED!! Time:{}",
-        //         (Local::now() - time_prev_local).num_minutes()
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //
-        //     let time_prev_local = Local::now();
-        //     res3_1_r2 = criterion_1_1(
-        //         &freq_table_prh_l3,
-        //         &distorted_n_grams_l3_1_r2.0,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L3],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        //     println!(
-        //         "res3_1_r2 FINISHED!! Time:{}",
-        //         (Local::now() - time_prev_local).num_minutes()
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //     let time_prev_local = Local::now();
-        //     res3_1_r3 = criterion_1_1(
-        //         &freq_table_prh_l3,
-        //         &distorted_n_grams_l3_1_r3.0,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L3],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        //     println!(
-        //         "res3_1_r3 FINISHED!! Time:{}",
-        //         (Local::now() - time_prev_local).num_minutes()
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //     let time_prev_local = Local::now();
-        //     res3_2 = criterion_1_1(
-        //         &freq_table_prh_l3,
-        //         &distorted_n_grams_l3_2.0,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L3],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        //     println!(
-        //         "res3_2 FINISHED!! Time:{}",
-        //         (Local::now() - time_prev_local).num_minutes()
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //     let time_prev_local = Local::now();
-        //     res3_3 = criterion_1_1(
-        //         &freq_table_prh_l3,
-        //         &distorted_n_grams_l3_3,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L3],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        //     println!(
-        //         "res3_3 FINISHED!! Time:{}",
-        //         (Local::now() - time_prev_local).num_minutes()
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //     let time_prev_local = Local::now();
-        //     res3_4 = criterion_1_1(
-        //         &freq_table_prh_l3,
-        //         &distorted_n_grams_l3_4,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L3],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        //     println!(
-        //         "res3_4 FINISHED!! Time:{}",
-        //         (Local::now() - time_prev_local).num_minutes()
-        //     );
-        // });
-        //
-        // s.spawn(|_s| {
-        //     let time_prev_local = Local::now();
-        //     res4_0 = criterion_1_1(
-        //         &freq_table_prh_l4,
-        //         &n_gram_l4,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L4],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        //     println!(
-        //         "res4_0 FINISHED!! Time:{}",
-        //         (Local::now() - time_prev_local).num_minutes()
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //     let time_prev_local = Local::now();
-        //     res4_1_r1 = criterion_1_1(
-        //         &freq_table_prh_l4,
-        //         &distorted_n_grams_l4_1_r1.0,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L4],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        //     println!(
-        //         "res4_1_r1 FINISHED!! Time:{}",
-        //         (Local::now() - time_prev_local).num_minutes()
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //     let time_prev_local = Local::now();
-        //     res4_1_r2 = criterion_1_1(
-        //         &freq_table_prh_l4,
-        //         &distorted_n_grams_l4_1_r2.0,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L4],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        //     println!(
-        //         "res4_1_r2 FINISHED!! Time:{}",
-        //         (Local::now() - time_prev_local).num_minutes()
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //     let time_prev_local = Local::now();
-        //     res4_1_r3 = criterion_1_1(
-        //         &freq_table_prh_l4,
-        //         &distorted_n_grams_l4_1_r3.0,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L4],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        //     println!(
-        //         "res4_1_r3 FINISHED!! Time:{}",
-        //         (Local::now() - time_prev_local).num_minutes()
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //     let time_prev_local = Local::now();
-        //     res4_2 = criterion_1_1(
-        //         &freq_table_prh_l4,
-        //         &distorted_n_grams_l4_2.0,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L4],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        //     println!(
-        //         "res4_2 FINISHED!! Time:{}",
-        //         (Local::now() - time_prev_local).num_minutes()
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //     let time_prev_local = Local::now();
-        //     res4_3 = criterion_1_1(
-        //         &freq_table_prh_l4,
-        //         &distorted_n_grams_l4_3,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L4],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        //     println!(
-        //         "res4_3 FINISHED!! Time:{}",
-        //         (Local::now() - time_prev_local).num_minutes()
-        //     );
-        // });
-        // s.spawn(|_s| {
-        //     let time_prev_local = Local::now();
-        //     res4_4 = criterion_1_1(
-        //         &freq_table_prh_l4,
-        //         &distorted_n_grams_l4_4,
-        //         &vec![L_BIGRAM, L_THREE_GRAM, L4],
-        //         default_threshold,
-        //         k_p,
-        //     );
-        //     println!(
-        //         "res4_4 FINISHED!! Time:{}",
-        //         (Local::now() - time_prev_local).num_minutes()
-        //     );
-        // });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res3_0 = criterion_1_1(
+                &freq_table_prh_l3,
+                &n_gram_l3,
+                &vec![L_BIGRAM, L_THREE_GRAM, L3],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res3_0 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            );
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res3_1_r1 = criterion_1_1(
+                &freq_table_prh_l3,
+                &distorted_n_grams_l3_1_r1.0,
+                &vec![L_BIGRAM, L_THREE_GRAM, L3],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res3_1_r1 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            );
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res3_1_r2 = criterion_1_1(
+                &freq_table_prh_l3,
+                &distorted_n_grams_l3_1_r2.0,
+                &vec![L_BIGRAM, L_THREE_GRAM, L3],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res3_1_r2 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            );
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res3_1_r3 = criterion_1_1(
+                &freq_table_prh_l3,
+                &distorted_n_grams_l3_1_r3.0,
+                &vec![L_BIGRAM, L_THREE_GRAM, L3],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res3_1_r3 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            );
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res3_2 = criterion_1_1(
+                &freq_table_prh_l3,
+                &distorted_n_grams_l3_2.0,
+                &vec![L_BIGRAM, L_THREE_GRAM, L3],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res3_2 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            );
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res3_3 = criterion_1_1(
+                &freq_table_prh_l3,
+                &distorted_n_grams_l3_3,
+                &vec![L_BIGRAM, L_THREE_GRAM, L3],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res3_3 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            );
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res3_4 = criterion_1_1(
+                &freq_table_prh_l3,
+                &distorted_n_grams_l3_4,
+                &vec![L_BIGRAM, L_THREE_GRAM, L3],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res3_4 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            );
+        });
+
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res4_0 = criterion_1_1(
+                &freq_table_prh_l4,
+                &n_gram_l4,
+                &vec![L_BIGRAM, L_THREE_GRAM, L4],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res4_0 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            );
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res4_1_r1 = criterion_1_1(
+                &freq_table_prh_l4,
+                &distorted_n_grams_l4_1_r1.0,
+                &vec![L_BIGRAM, L_THREE_GRAM, L4],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res4_1_r1 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            );
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res4_1_r2 = criterion_1_1(
+                &freq_table_prh_l4,
+                &distorted_n_grams_l4_1_r2.0,
+                &vec![L_BIGRAM, L_THREE_GRAM, L4],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res4_1_r2 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            );
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res4_1_r3 = criterion_1_1(
+                &freq_table_prh_l4,
+                &distorted_n_grams_l4_1_r3.0,
+                &vec![L_BIGRAM, L_THREE_GRAM, L4],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res4_1_r3 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            );
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res4_2 = criterion_1_1(
+                &freq_table_prh_l4,
+                &distorted_n_grams_l4_2.0,
+                &vec![L_BIGRAM, L_THREE_GRAM, L4],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res4_2 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            );
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res4_3 = criterion_1_1(
+                &freq_table_prh_l4,
+                &distorted_n_grams_l4_3,
+                &vec![L_BIGRAM, L_THREE_GRAM, L4],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res4_3 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            );
+        });
+        s.spawn(|_s| {
+            let time_prev_local = Local::now();
+            res4_4 = criterion_1_1(
+                &freq_table_prh_l4,
+                &distorted_n_grams_l4_4,
+                &vec![L_BIGRAM, L_THREE_GRAM, L4],
+                default_threshold,
+                k_p,
+            );
+            println!(
+                "res4_4 FINISHED!! Time:{}",
+                (Local::now() - time_prev_local).num_minutes()
+            );
+        });
     });
     println!(
         "IT FINALLY FINISHED!! Time:{}",
@@ -579,32 +644,32 @@ pub fn run(filepath: &str) {
         \n\t (criterion_1_1) [k_p: {k_p}] [res_1_2](h0, h1): {:?}, (alpha, beta): {:?} , \
         \n\t (criterion_1_1) [k_p: {k_p}] [res_1_3](h0, h1): {:?}, (alpha, beta): {:?} \
         \n\t (criterion_1_1) [k_p: {k_p}] [res_1_4](h0, h1): {:?}, (alpha, beta): {:?} \
-        ",
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_2_0](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_2_r1](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_2_r2](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_2_r3](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_2_2](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_2_3](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_2_4](h0, h1): {:?}, (alpha, beta): {:?}\
-        //
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_3_0](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_3_r1](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_3_r2](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_3_r3](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_3_2](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_3_3](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_3_4](h0, h1): {:?}, (alpha, beta): {:?}\
-        //
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_4_0](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_4_r1](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_4_r2](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_4_r3](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_4_2](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_4_3](h0, h1): {:?}, (alpha, beta): {:?}\
-        // \n\t (criterion_1_1) [k_p: {k_p}] [res_4_4](h0, h1): {:?}, (alpha, beta): {:?}\
-        //
-        //         ",
+
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_2_0](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_2_r1](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_2_r2](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_2_r3](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_2_2](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_2_3](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_2_4](h0, h1): {:?}, (alpha, beta): {:?}\
+
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_3_0](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_3_r1](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_3_r2](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_3_r3](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_3_2](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_3_3](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_3_4](h0, h1): {:?}, (alpha, beta): {:?}\
+
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_4_0](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_4_r1](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_4_r2](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_4_r3](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_4_2](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_4_3](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_1) [k_p: {k_p}] [res_4_4](h0, h1): {:?}, (alpha, beta): {:?}\
+
+                ",
         res1_0,
         calculate_probs(res1_0.0, res1_0.1, n_gram_l1.len()),
         res1_1_r1,
@@ -619,41 +684,48 @@ pub fn run(filepath: &str) {
         calculate_probs(res1_3.0, res1_3.1, distorted_n_grams_l1_3.len()),
         res1_4,
         calculate_probs(res1_4.0, res1_4.1, distorted_n_grams_l1_4.len()),
-        //          res2_0, calculate_probs(res2_0.0, res2_0.1, n_gram_l2.len()),
-        //          res2_1_r1, calculate_probs(res2_1_r1.0, res2_1_r1.1, distorted_n_grams_l2_1_r1.0.len()),
-        //          res2_1_r2, calculate_probs(res2_1_r2.0, res2_1_r2.1, distorted_n_grams_l2_1_r2.0.len()),
-        //          res2_1_r3, calculate_probs(res2_1_r3.0, res2_1_r3.1, distorted_n_grams_l2_1_r3.0.len()),
-        //          res2_2, calculate_probs(res2_2.0, res2_2.1, distorted_n_grams_l2_2.0.len()),
-        //          res2_3, calculate_probs(res2_3.0, res2_3.1, distorted_n_grams_l2_3.len()),
-        //          res2_4, calculate_probs(res2_4.0, res2_4.1, distorted_n_grams_l2_4.len()),
-        // res3_0,
-        // calculate_probs(res3_0.0, res3_0.1, n_gram_l3.len()),
-        // res3_1_r1,
-        // calculate_probs(res3_1_r1.0, res3_1_r1.1, distorted_n_grams_l3_1_r1.0.len()),
-        // res3_1_r2,
-        // calculate_probs(res3_1_r2.0, res3_1_r2.1, distorted_n_grams_l3_1_r2.0.len()),
-        // res3_1_r3,
-        // calculate_probs(res3_1_r3.0, res3_1_r3.1, distorted_n_grams_l3_1_r3.0.len()),
-        // res3_2,
-        // calculate_probs(res3_2.0, res3_2.1, distorted_n_grams_l3_2.0.len()),
-        // res3_3,
-        // calculate_probs(res3_3.0, res3_3.1, distorted_n_grams_l3_3.len()),
-        // res3_4,
-        // calculate_probs(res3_4.0, res3_4.1, distorted_n_grams_l3_4.len()),
-        // res4_0,
-        // calculate_probs(res4_0.0, res4_0.1, n_gram_l4.len()),
-        // res4_1_r1,
-        // calculate_probs(res4_1_r1.0, res4_1_r1.1, distorted_n_grams_l4_1_r1.0.len()),
-        // res4_1_r2,
-        // calculate_probs(res4_1_r2.0, res4_1_r2.1, distorted_n_grams_l4_1_r2.0.len()),
-        // res4_1_r3,
-        // calculate_probs(res4_1_r3.0, res4_1_r3.1, distorted_n_grams_l4_1_r3.0.len()),
-        // res4_2,
-        // calculate_probs(res4_2.0, res4_2.1, distorted_n_grams_l4_2.0.len()),
-        // res4_3,
-        // calculate_probs(res4_3.0, res4_3.1, distorted_n_grams_l4_3.len()),
-        // res4_4,
-        // calculate_probs(res4_4.0, res4_4.1, distorted_n_grams_l4_4.len()),
+        res2_0,
+        calculate_probs(res2_0.0, res2_0.1, n_gram_l2.len()),
+        res2_1_r1,
+        calculate_probs(res2_1_r1.0, res2_1_r1.1, distorted_n_grams_l2_1_r1.0.len()),
+        res2_1_r2,
+        calculate_probs(res2_1_r2.0, res2_1_r2.1, distorted_n_grams_l2_1_r2.0.len()),
+        res2_1_r3,
+        calculate_probs(res2_1_r3.0, res2_1_r3.1, distorted_n_grams_l2_1_r3.0.len()),
+        res2_2,
+        calculate_probs(res2_2.0, res2_2.1, distorted_n_grams_l2_2.0.len()),
+        res2_3,
+        calculate_probs(res2_3.0, res2_3.1, distorted_n_grams_l2_3.len()),
+        res2_4,
+        calculate_probs(res2_4.0, res2_4.1, distorted_n_grams_l2_4.len()),
+        res3_0,
+        calculate_probs(res3_0.0, res3_0.1, n_gram_l3.len()),
+        res3_1_r1,
+        calculate_probs(res3_1_r1.0, res3_1_r1.1, distorted_n_grams_l3_1_r1.0.len()),
+        res3_1_r2,
+        calculate_probs(res3_1_r2.0, res3_1_r2.1, distorted_n_grams_l3_1_r2.0.len()),
+        res3_1_r3,
+        calculate_probs(res3_1_r3.0, res3_1_r3.1, distorted_n_grams_l3_1_r3.0.len()),
+        res3_2,
+        calculate_probs(res3_2.0, res3_2.1, distorted_n_grams_l3_2.0.len()),
+        res3_3,
+        calculate_probs(res3_3.0, res3_3.1, distorted_n_grams_l3_3.len()),
+        res3_4,
+        calculate_probs(res3_4.0, res3_4.1, distorted_n_grams_l3_4.len()),
+        res4_0,
+        calculate_probs(res4_0.0, res4_0.1, n_gram_l4.len()),
+        res4_1_r1,
+        calculate_probs(res4_1_r1.0, res4_1_r1.1, distorted_n_grams_l4_1_r1.0.len()),
+        res4_1_r2,
+        calculate_probs(res4_1_r2.0, res4_1_r2.1, distorted_n_grams_l4_1_r2.0.len()),
+        res4_1_r3,
+        calculate_probs(res4_1_r3.0, res4_1_r3.1, distorted_n_grams_l4_1_r3.0.len()),
+        res4_2,
+        calculate_probs(res4_2.0, res4_2.1, distorted_n_grams_l4_2.0.len()),
+        res4_3,
+        calculate_probs(res4_3.0, res4_3.1, distorted_n_grams_l4_3.len()),
+        res4_4,
+        calculate_probs(res4_4.0, res4_4.1, distorted_n_grams_l4_4.len()),
     )
 }
 
@@ -726,7 +798,6 @@ fn is_n_gram_prohibited_with_custom_l_grams(
 ) -> u64 {
     let mut prohibited_grams = 0;
     for i in 0..chunks {
-        println!("in loop",);
         let mut counter = n_gram.chars().into_iter().count() - i;
         let mut char_iter = n_gram.chars().into_iter();
         let _skip = (0..i)

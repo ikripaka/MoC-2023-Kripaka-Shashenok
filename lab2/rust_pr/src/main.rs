@@ -22,47 +22,12 @@ fn main() {
 
     // ====== PROGRAM STARTED ======
 
-    let (mut l1_gram, mut l2_gram, mut l3_gram, mut l4_gram) =
-        (Vec::new(), Vec::new(), Vec::new(), Vec::new());
-
-    rayon::scope(|s| {
-        s.spawn(|_s| {
-            l1_gram = make_n_gram_on_file_content(&filepath, L1);
-        });
-        s.spawn(|_s| {
-            l2_gram = make_n_gram_on_file_content(&filepath, L2);
-        });
-        s.spawn(|_s| {
-            l3_gram = make_n_gram_on_file_content(&filepath, L3);
-        });
-        s.spawn(|_s| {
-            l4_gram = make_n_gram_on_file_content(&filepath, L4);
-        });
-    });
-    println!(
-        "{}, {}, {}, {}",
-        l1_gram.len(),
-        l2_gram.len(),
-        l3_gram.len(),
-        l4_gram.len()
-    );
-
-    // let chunks = 2;
-    // let monogram = make_n_gram_on_alphabet(chunks, &UKR_ALPHABET);
-    // let freq_table1 = make_frequency_table(&filepath, &monogram, chunks);
-    // println!("monogram entropy: {}", calculate_entropy(&make_probability_table(&freq_table1)));
-
-    // let bigram = make_n_gram(2,&UKR_ALPHABET);
-    // let frequency_table = make_frequency_table(&filepath, &bigram , 2);
-
-    // println!("bigram: {:?} \n\t\t frequency table: {:?}",bigram.len(), frequency_table.len());
-
     criterions::criterion_1_0::run(&filepath);
-    // criterions::criterion_1_1::run();
-    // criterions::criterion_1_2::run();
-    // criterions::criterion_1_3::run();
-    // criterions::criterion_4_0::run();
-    // criterions::criterion_5_0::run();
+    criterions::criterion_1_1::run(&filepath);
+    criterions::criterion_1_2::run(&filepath);
+    criterions::criterion_1_3::run(&filepath);
+    criterions::criterion_4_0::run(&filepath);
+    // criterions::criterion_5_0::run(&filepath);
 
     println!("{}", "ALL IS OK");
 }

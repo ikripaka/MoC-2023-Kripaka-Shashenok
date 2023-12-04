@@ -375,10 +375,18 @@ pub fn calculate_entropy(prob_table: &HashMap<String, f64>) -> f64 {
 pub fn calculate_probs(h0: u64, h1: u64, total_l_grams_amount: usize) -> (f64, f64) {
     println!("total_l_grams: {total_l_grams_amount}");
     let all_cases = total_l_grams_amount as f64;
-    let (p_h_0, p_h_1) = (h0 as f64 / all_cases, h1 as f64 / all_cases);
+    let (p_h_0, p_h_1) = (
+        h0 as f64 / all_cases,
+        h1 as f64 / all_cases, // if h0 == 0 { 0. } else { h0 as f64 / all_cases },
+                               // if h1 == 0 { 0. } else { h1 as f64 / all_cases },
+    );
     let p_h_0_1 = p_h_0 * p_h_1;
     println!("p_h_0_1: {p_h_0_1}, p_h_0: {p_h_0}, p_h_1:{p_h_1}");
-    (p_h_0_1 / p_h_0, p_h_0_1 / p_h_1)
+    (
+        p_h_0_1 / p_h_0,
+        p_h_0_1 / p_h_1, // if p_h_0 == 0. { 0. } else { p_h_0_1 / p_h_0 },
+                         // if p_h_1 == 0. { 0. } else { p_h_0_1 / p_h_1 },
+    )
 }
 
 /// **format_file** -- formats file and deletes all redundant symbol
