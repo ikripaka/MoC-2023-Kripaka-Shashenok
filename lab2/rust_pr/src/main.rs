@@ -1,13 +1,10 @@
 use dotenv::dotenv;
-use regex::Regex;
+
+use rust_pr::{criterions, L1, L2, L3, L4, N1, N2, THRESHOLD};
 use rust_pr::internals::{
-    calculate_entropy, format_file, is_n_gram_prohibited_with_ngrams,
-    make_frequency_table_from_file, make_n_gram_on_alphabet, make_n_gram_on_file_content,
-    make_probability_table,
+    format_file, is_n_gram_prohibited_with_ngrams,
+    make_frequency_table_from_file, make_n_gram_on_file_content,
 };
-use rust_pr::{criterions, L1, L2, L3, L4, N1, N2, THRESHOLD, UKR_ALPHABET};
-use std::fs::File;
-use std::io::{BufRead, BufReader, BufWriter, Read, Write};
 
 fn main() {
     dotenv().ok();
@@ -22,12 +19,15 @@ fn main() {
 
     // ====== PROGRAM STARTED ======
 
-    criterions::criterion_1_0::run(&filepath);
-    criterions::criterion_1_1::run(&filepath);
-    criterions::criterion_1_2::run(&filepath);
-    criterions::criterion_1_3::run(&filepath);
+    // criterions::criterion_1_0::run(&filepath);
+    // criterions::criterion_1_1::run(&filepath);
+    // criterions::criterion_1_2::run(&filepath);
+    // criterions::criterion_1_3::run(&filepath);
     criterions::criterion_4_0::run(&filepath);
     // criterions::criterion_5_0::run(&filepath);
+    // criterions::struct_deflate::run(&filepath);
+    // criterions::struct_bwt::run(&filepath);
+    // criterions::struct_lzma::run(&filepath);
 
     println!("{}", "ALL IS OK");
 }
@@ -69,33 +69,33 @@ fn forbidden_n_gram_test() {
     assert!(is_n_gram_prohibited_with_ngrams(
         &"аааааааааа".to_string(),
         &frequency_table2,
-        THRESHOLD
+        THRESHOLD,
     ));
     assert!(is_n_gram_prohibited_with_ngrams(
         &"одинголосс".to_string(),
         &frequency_table2,
-        THRESHOLD
+        THRESHOLD,
     ));
     assert!(is_n_gram_prohibited_with_ngrams(
         &"кривиласят".to_string(),
         &frequency_table2,
-        THRESHOLD
+        THRESHOLD,
     ));
 
     assert!(!is_n_gram_prohibited_with_ngrams(
         &"ча".to_string(),
         &frequency_table1,
-        THRESHOLD
+        THRESHOLD,
     ));
     assert!(!is_n_gram_prohibited_with_ngrams(
         &"ми".to_string(),
         &frequency_table1,
-        THRESHOLD
+        THRESHOLD,
     ));
     assert!(!is_n_gram_prohibited_with_ngrams(
         &"ре".to_string(),
         &frequency_table1,
-        THRESHOLD
+        THRESHOLD,
     ));
 }
 

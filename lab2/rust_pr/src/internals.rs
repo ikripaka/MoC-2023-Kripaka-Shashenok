@@ -4,13 +4,14 @@ use rand::{thread_rng, Rng};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Read, Write};
+use std::ops::Range;
 
-use crate::{UKR_ALPHABET, UKR_ALPHABET_REVERSE_MAP};
+use crate::{L1, L2, L3, L4, L_BIGRAM, UKR_ALPHABET, UKR_ALPHABET_REVERSE_MAP};
 use regex::Regex;
 
 // =================== TEXT DISTORTION BEGINNING ===================
 #[inline]
-fn generate_random_l_gram(l: usize, alphabet_len: usize, alphabet: &[char]) -> String {
+pub fn generate_random_l_gram(l: usize, alphabet_len: usize, alphabet: &[char]) -> String {
     (0..l)
         .map(|x| alphabet[thread_rng().gen_range(0..alphabet_len)])
         .collect()
@@ -93,7 +94,7 @@ pub fn vigenere_cipher_distortion(
 }
 
 /// affine substitution
-/// (б) DISTORSION OF THE TEXT
+/// (б.1) DISTORSION OF THE TEXT
 pub fn generate_affine_distortion(
     l: usize,
     l_grams: &[String],
@@ -142,6 +143,56 @@ pub fn generate_affine_distortion(
                 &b,
                 alphabet_len as u16,
             )
+        },
+    );
+    left.extend_from_slice(&right);
+    (left, (a, b))
+}
+
+/// bigram affine substitution
+/// (б.2) DISTORSION OF THE TEXT
+pub fn bigram_affine_distortion(
+    l_grams: &[String],
+    alphabet: &[char],
+) -> (Vec<String>, (u16, u16)) {
+    let distore_n_grams =
+        |distored_grams: &mut Vec<String>, slice: &[String], a: u16, b: u16, module: u16, bigram_to_num_map: &HashMap<String, u16>, num_to_bigram_map: &Vec<String>| {
+            for l_gram in slice {
+                let mut chars = l_gram.chars();
+                let text_divided_on_bigrams = (0..)
+                    .map(|_| chars.by_ref().take(L_BIGRAM).collect::<String>())
+                    .take_while(|s| !s.is_empty())
+                    .collect::<Vec<_>>();
+                distored_grams.push(text_divided_on_bigrams.iter().map(|str| {
+                    num_to_bigram_map[((a * bigram_to_num_map.get(str).unwrap() + b) % module) as usize].clone()
+                }).collect())
+            }
+        };
+
+    let m = alphabet.len() as u8;
+    let (mut a, mut b) = (0, 0);
+    let mut module = (m as u16) * (m as u16);
+    rayon::join(
+        || a = thread_rng().gen_range(1..module),
+        || b = thread_rng().gen_range(1..module),
+    );
+    let bigrams = make_n_gram_on_alphabet(L_BIGRAM, &UKR_ALPHABET);
+    // aka bigram substitution
+    let bigram_to_number_map: HashMap<String, u16> = {
+        bigrams.iter().map(|x| {
+            let mut char_indices = x.char_indices();
+            let (x_1, x_2) = (*UKR_ALPHABET_REVERSE_MAP.get(&char_indices.next().unwrap().1).unwrap(), *UKR_ALPHABET_REVERSE_MAP.get(&char_indices.next().unwrap().1).unwrap());
+            (x.clone(), x_1 as u16 * m as u16 + x_2 as u16)
+        }).collect()
+    };
+
+    let (mut left, mut right) = (Vec::new(), Vec::new());
+    rayon::join(
+        || {
+            distore_n_grams(&mut left, &l_grams[0..(l_grams.len() >> 1)], a, b, module, &bigram_to_number_map, &bigrams)
+        },
+        || {
+            distore_n_grams(&mut right, &l_grams[(l_grams.len() >> 1)..], a, b, module, &bigram_to_number_map, &bigrams)
         },
     );
     left.extend_from_slice(&right);
@@ -230,6 +281,58 @@ pub fn make_frequency_table(content: &str, chunks: usize) -> HashMap<String, u64
     map
 }
 
+pub fn make_frequency_table_for_long_chunks(content: &str, chunks: usize, range: Range<usize>) -> HashMap<String, u64> {
+    let mut map = HashMap::new();
+
+    for i in range {
+        println!("{chunks} {i}");
+        let mut new_content = content.to_string();
+        for _ in 0..i{
+            new_content.remove(0);
+        }
+        let sub_strings = make_n_gram_on_content_from_str(chunks, content);
+
+        for x in sub_strings {
+            match map.get(&x) {
+                None => {
+                    map.insert(x.clone(), 1);
+                }
+                Some(val) => {
+                    map.insert(x.clone(), *val + 1);
+                }
+            }
+        }
+    }
+    map
+}
+
+pub fn make_frequency_table_custom_manual(content: &str, chunks: usize) -> HashMap<String, u64> {
+    let mut map1 = HashMap::new();
+    let mut map2 = HashMap::new();
+
+    rayon::scope(|s| {
+        s.spawn(|_s| {
+            map1 = make_frequency_table_for_long_chunks(content, chunks, 0..201)
+        });
+        s.spawn(|_s| {
+            map2 = make_frequency_table_for_long_chunks(content, chunks, 301..501)
+        });
+    });
+
+    for x in map2 {
+        match map1.get(&x.0) {
+            None => {
+                map1.insert(x.0.clone(), x.1);
+            }
+            Some(val) => {
+                map1.insert(x.0.clone(), *val + x.1);
+            }
+        }
+    }
+    map1
+}
+
+
 /// `make_n_gram_on_content` -- constructs from given content given length symbols chunks
 pub fn make_n_gram_on_content(chunks: usize, content: String) -> Vec<String> {
     //trim string to specific size
@@ -300,10 +403,7 @@ pub fn is_n_gram_prohibited_with_custom_l_grams(
                 &(0..chunks)
                     .into_iter()
                     .map(|x| match char_iter.next() {
-                        None => {
-                            println!("hi bug!");
-                            'a'
-                        }
+                        None => 'a',
                         Some(c) => c,
                     })
                     .collect::<String>(),
@@ -372,20 +472,20 @@ pub fn calculate_entropy(prob_table: &HashMap<String, f64>) -> f64 {
     })
 }
 
-pub fn calculate_probs(h0: u64, h1: u64, total_l_grams_amount: usize) -> (f64, f64) {
+pub fn calculate_probs(h0: u64, h1: u64, total_l_grams_amount: usize) -> ((f64, f64), (f64, f64)) {
     println!("total_l_grams: {total_l_grams_amount}");
     let all_cases = total_l_grams_amount as f64;
     let (p_h_0, p_h_1) = (
         h0 as f64 / all_cases,
         h1 as f64 / all_cases, // if h0 == 0 { 0. } else { h0 as f64 / all_cases },
-                               // if h1 == 0 { 0. } else { h1 as f64 / all_cases },
+        // if h1 == 0 { 0. } else { h1 as f64 / all_cases },
     );
     let p_h_0_1 = p_h_0 * p_h_1;
     println!("p_h_0_1: {p_h_0_1}, p_h_0: {p_h_0}, p_h_1:{p_h_1}");
     (
-        p_h_0_1 / p_h_0,
-        p_h_0_1 / p_h_1, // if p_h_0 == 0. { 0. } else { p_h_0_1 / p_h_0 },
-                         // if p_h_1 == 0. { 0. } else { p_h_0_1 / p_h_1 },
+        (p_h_0, p_h_1),
+        (p_h_0_1 / p_h_0, p_h_0_1 / p_h_1), // if p_h_0 == 0. { 0. } else { p_h_0_1 / p_h_0 },
+        // if p_h_1 == 0. { 0. } else { p_h_0_1 / p_h_1 },
     )
 }
 
@@ -413,6 +513,44 @@ pub fn format_file(in_filepath: &str, out_filepath: &str) {
         buf.clear();
     }
     writer.flush().unwrap();
+}
+
+pub fn divide_into_l_grams(
+    n_gram_l1: &mut Vec<String>,
+    n_gram_l2: &mut Vec<String>,
+    n_gram_l3: &mut Vec<String>,
+    n_gram_l4: &mut Vec<String>,
+    content: &String,
+) {
+    rayon::scope(|s| {
+        s.spawn(|_s| {
+            *n_gram_l1 = make_n_gram_on_content_from_str(L1, &content);
+        });
+        s.spawn(|_s| {
+            *n_gram_l2 = make_n_gram_on_content_from_str(L2, &content);
+        });
+        s.spawn(|_s| {
+            *n_gram_l3 = make_n_gram_on_content_from_str(L3, &content);
+        });
+        s.spawn(|_s| {
+            *n_gram_l4 = make_n_gram_on_content_from_str(L4, &content);
+        });
+    });
+}
+
+pub fn double_content(str: &String) -> String {
+    let mut str1 = str.clone();
+    let mut str2 = str.clone();
+    str2.remove(0);
+    str1 + str2.as_str()
+}
+
+#[test]
+fn double_content_test() {
+    let str = "іванбагрянийтигроловичастинапершарозділпершийдраконвирячившивогненніочідихаючиполумямідимомпотрясаючиревомпустеліінетраівогненнимхвостомзамітаючислідлетівдраконнезкитайськихказокінезпагодтібетувінзнявсядесьзгромохкогоцентрукраїничудесвилетівзчорногопеклаземлілюдоловівігнавнад".to_string();
+    let doubled_content = double_content(&str);
+
+    println!("doubled_content: {:?}", doubled_content)
 }
 
 #[test]
@@ -443,6 +581,30 @@ fn affine_distortion_gen_test() {
         "original: {:?} \n\t\t affine distorted n_gram: {:?} \n\t\t{:?}",
         &n_grams[0..10],
         affine_distortion,
+        &n_grams[0..10]
+            .iter()
+            .map(|c| c
+                .chars()
+                .map(|c| *UKR_ALPHABET_REVERSE_MAP.get(&c).unwrap())
+                .collect::<Vec<u8>>())
+            .collect::<Vec<Vec<u8>>>()
+    )
+}
+
+#[test]
+fn generate_bigram_affine_distortion_test() {
+    dotenv().ok();
+    let filepath = std::env::var("OUTPUT_FILENAME")
+        .unwrap()
+        .as_str()
+        .to_string();
+    let chunks = 2;
+    let n_grams = make_n_gram_on_file_content(&filepath, chunks);
+    let bigram_affine_distortion = bigram_affine_distortion(&n_grams[0..10], &UKR_ALPHABET);
+    println!(
+        "original: {:?} \n\t\t affine distorted n_gram: {:?} \n\t\t{:?}",
+        &n_grams[0..10],
+        bigram_affine_distortion,
         &n_grams[0..10]
             .iter()
             .map(|c| c
@@ -498,4 +660,10 @@ fn custom_forbidden_grams_test() {
     );
     let time_after = Local::now();
     println!("{}", (time_after - time_prev).num_milliseconds())
+}
+
+#[test]
+fn make_n_gram_alphabet_test() {
+    let n = 2;
+    println!("{n}_grams: {:?}", make_n_gram_on_alphabet(n, &UKR_ALPHABET))
 }

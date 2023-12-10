@@ -1,17 +1,17 @@
-use crate::internals::{bigram_affine_distortion, calculate_probs, double_content, generate_affine_distortion, generate_random_n_l_grams, make_frequency_table, make_frequency_table_from_file, make_n_gram_on_content_from_str, make_n_gram_on_file_content, recurrent_generation_n_l_grams, vigenere_cipher_distortion};
-use crate::{L1, L2, L3, L4, L_BIGRAM, L_THREE_GRAM, N1, N2, R1, R2, R3, UKR_ALPHABET};
+use std::fs::File;
+use std::io::{BufWriter, Read, Write};
+
 use chrono::Local;
 use dotenv::dotenv;
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::Read;
+use compress::bwt;
+
+use crate::{L1, L2, L3, L4, L_BIGRAM, L_THREE_GRAM, N1, R1, R2, R3, UKR_ALPHABET};
+use crate::internals::{calculate_probs, double_content, generate_affine_distortion, generate_random_l_gram, generate_random_n_l_grams, make_frequency_table, make_n_gram_on_content_from_str, recurrent_generation_n_l_grams, vigenere_cipher_distortion};
 
 pub fn run(filepath: &str) {
     let time_prev = Local::now();
 
-    let j = 200;
-    let j_bigram = 200;
-    let k_empty = 100;
+    let threshold = 0.2;
 
     let mut file = File::open(filepath).unwrap();
     let mut content = String::new();
@@ -82,7 +82,7 @@ pub fn run(filepath: &str) {
             freq_table_l4 = make_frequency_table(&content, L4);
         });
     });
-    println!("Frequency tables are calculated (criterion_5)");
+    println!("Frequency tables are calculated (struct_bwt)");
 
     let (mut bigrams, mut three_grams, mut n_gram_l1, mut n_gram_l2, mut n_gram_l3, mut n_gram_l4): (
         Vec<String>,
@@ -112,7 +112,7 @@ pub fn run(filepath: &str) {
             n_gram_l4 = make_n_gram_on_content_from_str(L4, &content);
         });
     });
-    println!("N grams are made (criterion_5)");
+    println!("N grams are made (struct_bwt)");
 
     let (
         mut distorted_n_grams_l1_1_r1,
@@ -223,21 +223,21 @@ pub fn run(filepath: &str) {
             distorted_n_grams_l4_2 = generate_affine_distortion(L4, &n_gram_l4, &UKR_ALPHABET);
         });
         s.spawn(|_s| {
-            distorted_n_grams_l4_3 = generate_random_n_l_grams(L4, N2, &UKR_ALPHABET);
+            distorted_n_grams_l4_3 = generate_random_n_l_grams(L4, N1, &UKR_ALPHABET);
         });
         s.spawn(|_s| {
-            distorted_n_grams_l4_4 = recurrent_generation_n_l_grams(L4, N2, &UKR_ALPHABET);
+            distorted_n_grams_l4_4 = recurrent_generation_n_l_grams(L4, N1, &UKR_ALPHABET);
         });
     });
-    println!("Distorted N grams are made (criterion_5)");
+    println!("Distorted N grams are made (struct_bwt)");
 
     rayon::scope(|s| {
         s.spawn(|_s| {
-            res1_0 = criterion_5(&freq_table_l1, &freq_table_bigram, &n_gram_l1, j, j_bigram, k_empty);
+            res1_0 = struct_bwt(L1, &n_gram_l1, threshold);
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res1_1_r1 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l1_1_r1.0, j, j_bigram, k_empty);
+            res1_1_r1 = struct_bwt(L1, &distorted_n_grams_l1_1_r1.0, threshold);
             println!(
                 "res1_1_r1 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -245,7 +245,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res1_1_r2 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l1_1_r2.0, j, j_bigram, k_empty);
+            res1_1_r2 = struct_bwt(L1, &distorted_n_grams_l1_1_r2.0, threshold);
             println!(
                 "res1_1_r2 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -253,7 +253,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res1_1_r3 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l1_1_r3.0, j, j_bigram, k_empty);
+            res1_1_r3 = struct_bwt(L1, &distorted_n_grams_l1_1_r3.0, threshold);
             println!(
                 "res1_1_r3 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -261,7 +261,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res1_2 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l1_2.0, j, j_bigram, k_empty);
+            res1_2 = struct_bwt(L1, &distorted_n_grams_l1_2.0, threshold);
             println!(
                 "res1_2 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -269,7 +269,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res1_3 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l1_3, j, j_bigram, k_empty);
+            res1_3 = struct_bwt(L1, &distorted_n_grams_l1_3, threshold);
             println!(
                 "res1_3 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -277,7 +277,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res1_4 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l1_4, j, j_bigram, k_empty);
+            res1_4 = struct_bwt(L1, &distorted_n_grams_l1_4, threshold);
             println!(
                 "res1_4 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -286,7 +286,7 @@ pub fn run(filepath: &str) {
 
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res2_0 = criterion_5(&freq_table_l1, &freq_table_bigram, &n_gram_l2, j, j_bigram, k_empty);
+            res2_0 = struct_bwt(L2, &n_gram_l2, threshold);
             println!(
                 "res2_0 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -294,7 +294,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res2_1_r1 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l2_1_r1.0, j, j_bigram, k_empty);
+            res2_1_r1 = struct_bwt(L2, &distorted_n_grams_l2_1_r1.0, threshold);
             println!(
                 "res2_1_r1 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -302,7 +302,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res2_1_r2 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l2_1_r2.0, j, j_bigram, k_empty);
+            res2_1_r2 = struct_bwt(L2, &distorted_n_grams_l2_1_r2.0, threshold);
             println!(
                 "res2_1_r2 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -310,7 +310,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res2_1_r3 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l2_1_r3.0, j, j_bigram, k_empty);
+            res2_1_r3 = struct_bwt(L2, &distorted_n_grams_l2_1_r3.0, threshold);
             println!(
                 "res2_1_r3 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -318,7 +318,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res2_2 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l2_2.0, j, j_bigram, k_empty);
+            res2_2 = struct_bwt(L2, &distorted_n_grams_l2_2.0, threshold);
             println!(
                 "res2_2 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -326,7 +326,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res2_3 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l2_3, j, j_bigram, k_empty);
+            res2_3 = struct_bwt(L2, &distorted_n_grams_l2_3, threshold);
             println!(
                 "res2_3 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -334,7 +334,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res2_4 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l2_4, j, j_bigram, k_empty);
+            res2_4 = struct_bwt(L2, &distorted_n_grams_l2_4, threshold);
             println!(
                 "res2_4 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -343,7 +343,7 @@ pub fn run(filepath: &str) {
 
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res3_0 = criterion_5(&freq_table_l1, &freq_table_bigram, &n_gram_l3, j, j_bigram, k_empty);
+            res3_0 = struct_bwt(L3, &n_gram_l3, threshold);
             println!(
                 "res3_0 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -351,7 +351,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res3_1_r1 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l3_1_r1.0, j, j_bigram, k_empty);
+            res3_1_r1 = struct_bwt(L3, &distorted_n_grams_l3_1_r1.0, threshold);
             println!(
                 "res3_1_r1 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -359,7 +359,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res3_1_r2 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l3_1_r2.0, j, j_bigram, k_empty);
+            res3_1_r2 = struct_bwt(L3, &distorted_n_grams_l3_1_r2.0, threshold);
             println!(
                 "res3_1_r2 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -367,7 +367,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res3_1_r3 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l3_1_r3.0, j, j_bigram, k_empty);
+            res3_1_r3 = struct_bwt(L3, &distorted_n_grams_l3_1_r3.0, threshold);
             println!(
                 "res3_1_r3 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -375,7 +375,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res3_2 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l3_2.0, j, j_bigram, k_empty);
+            res3_2 = struct_bwt(L3, &distorted_n_grams_l3_2.0, threshold);
             println!(
                 "res3_2 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -383,7 +383,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res3_3 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l3_3, j, j_bigram, k_empty);
+            res3_3 = struct_bwt(L3, &distorted_n_grams_l3_3, threshold);
             println!(
                 "res3_3 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -391,7 +391,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res3_4 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l3_4, j, j_bigram, k_empty);
+            res3_4 = struct_bwt(L3, &distorted_n_grams_l3_4, threshold);
             println!(
                 "res3_4 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -400,7 +400,7 @@ pub fn run(filepath: &str) {
 
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res4_0 = criterion_5(&freq_table_l1, &freq_table_bigram, &n_gram_l4, j, j_bigram, k_empty);
+            res4_0 = struct_bwt(L4, &n_gram_l4, threshold);
             println!(
                 "res4_0 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -408,7 +408,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res4_1_r1 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l4_1_r1.0, j, j_bigram, k_empty);
+            res4_1_r1 = struct_bwt(L4, &distorted_n_grams_l4_1_r1.0, threshold);
             println!(
                 "res4_1_r1 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -416,7 +416,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res4_1_r2 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l4_1_r2.0, j, j_bigram, k_empty);
+            res4_1_r2 = struct_bwt(L4, &distorted_n_grams_l4_1_r2.0, threshold);
             println!(
                 "res4_1_r2 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -424,7 +424,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res4_1_r3 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l4_1_r3.0, j, j_bigram, k_empty);
+            res4_1_r3 = struct_bwt(L4, &distorted_n_grams_l4_1_r3.0, threshold);
             println!(
                 "res4_1_r3 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -432,7 +432,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res4_2 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l4_2.0, j, j_bigram, k_empty);
+            res4_2 = struct_bwt(L4, &distorted_n_grams_l4_2.0, threshold);
             println!(
                 "res4_2 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -440,7 +440,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res4_3 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l4_3, j, j_bigram, k_empty);
+            res4_3 = struct_bwt(L4, &distorted_n_grams_l4_3, threshold);
             println!(
                 "res4_3 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -448,7 +448,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             let time_prev_local = Local::now();
-            res4_4 = criterion_5(&freq_table_l1, &freq_table_bigram, &distorted_n_grams_l4_4, j, j_bigram, k_empty);
+            res4_4 = struct_bwt(L4, &distorted_n_grams_l4_4, threshold);
             println!(
                 "res4_4 FINISHED!! Time:{}",
                 (Local::now() - time_prev_local).num_minutes()
@@ -463,37 +463,37 @@ pub fn run(filepath: &str) {
     println!(
         "Result: \
 
-        \n\t (criterion_5) [res1_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
-        \n\t (criterion_5) [res_1_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_1_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_1_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_1_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} , \
-        \n\t (criterion_5) [res_1_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
-        \n\t (criterion_5) [res_1_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
+        \n\t (struct_bwt) [res1_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
+        \n\t (struct_bwt) [res_1_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_1_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_1_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_1_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} , \
+        \n\t (struct_bwt) [res_1_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
+        \n\t (struct_bwt) [res_1_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
 
-        \n\t (criterion_5) [res_2_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_2_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_2_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_2_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_2_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_2_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_2_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_2_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_2_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_2_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_2_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_2_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_2_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_2_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
 
-        \n\t (criterion_5) [res_3_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_3_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_3_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_3_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_3_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_3_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_3_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_3_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_3_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_3_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_3_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_3_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_3_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_3_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
 
-        \n\t (criterion_5) [res_4_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_4_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_4_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_4_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_4_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_4_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_5) [res_4_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_4_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_4_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_4_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_4_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_4_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_4_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_bwt) [res_4_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
 
                 ",
         res1_0,
@@ -555,50 +555,27 @@ pub fn run(filepath: &str) {
     )
 }
 
-fn criterion_5(
-    l_gram_frequency_table: &HashMap<String, u64>,
-    bigram_frequency_table: &HashMap<String, u64>,
+fn struct_bwt(
+    l: usize,
     l_grams: &Vec<String>,
-    j: usize,
-    j_bigram: usize,
-    k_empty: usize,
+    threshold: f64,
 ) -> (u64, u64) {
     let (mut h_0, mut h_1) = (0, 0);
 
-    let mut l_grams_b_prh = sort_hash_map(l_gram_frequency_table);
-    l_grams_b_prh.truncate(j);
-    let mut bigrams_b_prh = sort_hash_map(bigram_frequency_table);
-    bigrams_b_prh.truncate(j_bigram);
-
-
     for l_gram in l_grams {
-        let (mut bigram_crates, mut l_gram_crates): (Vec<usize>, Vec<usize>) =
-            (vec![0; j_bigram], vec![0; j]);
+        let (mut compressed_normal_text, mut compressed_random_text): (Vec<u8>, Vec<u8>) = (Vec::new(), Vec::new());
         rayon::scope(|s| {
             s.spawn(|_s| {
-                for (i, prh_bigram) in bigrams_b_prh.iter().enumerate() {
-                    if l_gram.contains(&prh_bigram.0) {
-                        bigram_crates[i] += 1;
-                    }
-                }
+                compressed_normal_text = compress(l_gram.as_bytes());
             });
-            // s.spawn(|_s| {
-            //     for (i, prh_bigram) in l_grams_b_prh.iter().enumerate() {
-            //         if l_gram.contains(&prh_bigram.0) {
-            //             l_gram_crates[i] += 1;
-            //         }
-            //     }
-            // });
+            s.spawn(|_s| {
+                compressed_random_text = compress(generate_random_l_gram(l, UKR_ALPHABET.len(), &UKR_ALPHABET).as_bytes());
+            });
         });
+        let compression_coef_normal = l as f64 / compressed_normal_text.len() as f64;
+        let compression_coef_random = l as f64 / compressed_random_text.len() as f64;
 
-
-        let f_empty = {
-            let empty1 = bigram_crates.iter().fold(0, |acc, &y| if y == 0 { acc + 1 } else { acc });
-            // let empty2 = l_gram_crates.iter().fold(0, |acc, &y| if y == 0 { acc + 1 } else { acc });
-            empty1
-        };
-        // println!("f_empty: {}, k_empty: {}", f_empty, k_empty);
-        if f_empty <= k_empty {
+        if (compression_coef_normal - compression_coef_random).abs() <= threshold {
             h_1 += 1;
         } else {
             h_0 += 1;
@@ -607,63 +584,11 @@ fn criterion_5(
     (h_0, h_1)
 }
 
-fn criterion_5_log(
-    l_gram_frequency_table: &HashMap<String, u64>,
-    bigram_frequency_table: &HashMap<String, u64>,
-    l_grams: &Vec<String>,
-    j: usize,
-    j_bigram: usize,
-    k_empty: usize,
-) -> (u64, u64) {
-    let (mut h_0, mut h_1) = (0, 0);
-
-    let mut l_grams_b_prh = sort_hash_map(l_gram_frequency_table);
-    l_grams_b_prh.truncate(j);
-    let mut bigrams_b_prh = sort_hash_map(bigram_frequency_table);
-    bigrams_b_prh.truncate(j_bigram);
-
-
-    for l_gram in l_grams {
-        let (mut bigram_crates, mut l_gram_crates): (Vec<usize>, Vec<usize>) =
-            (vec![0; j_bigram], vec![0; j]);
-        rayon::scope(|s| {
-            s.spawn(|_s| {
-                for (i, prh_bigram) in bigrams_b_prh.iter().enumerate() {
-                    if l_gram.contains(&prh_bigram.0) {
-                        bigram_crates[i] += 1;
-                    }
-                }
-            });
-            s.spawn(|_s| {
-                for (i, prh_bigram) in l_grams_b_prh.iter().enumerate() {
-                    if l_gram.contains(&prh_bigram.0) {
-                        l_gram_crates[i] += 1;
-                    }
-                }
-            });
-        });
-
-
-        let f_empty = {
-            let empty1 = bigram_crates.iter().fold(0, |acc, &y| if y == 0 { acc + 1 } else { acc });
-            let empty2 = l_gram_crates.iter().fold(0, |acc, &y| if y == 0 { acc + 1 } else { acc });
-            println!("{:?} {:?} {} {}",bigram_crates, l_gram_crates,empty1, empty2);
-            empty1 + empty2
-        };
-        // println!("f_empty: {}, k_empty: {}", f_empty, k_empty);
-        if f_empty <= k_empty {
-            h_1 += 1;
-        } else {
-            h_0 += 1;
-        }
-    }
-    (h_0, h_1)
-}
-
-fn sort_hash_map(map: &HashMap<String, u64>) -> Vec<(String, u64)> {
-    let mut vec: Vec<(String, u64)> = map.iter().map(|(x, y)| (x.clone(), *y)).collect();
-    vec.sort_by(|x, y| x.1.cmp(&y.1));
-    vec
+fn compress(data: &[u8]) -> Vec<u8> {
+    let mut e = bwt::Encoder::new(BufWriter::new(Vec::new()), 4 << 20);
+    e.write(data).expect("Failed to finish compression!");
+    let (encoded, _) = e.finish();
+    encoded.buffer().to_vec()
 }
 
 #[test]
@@ -673,7 +598,10 @@ fn sorting() {
         .unwrap()
         .as_str()
         .to_string();
-    let (chunks, threshold) = (2, 10);
-    let freq_table = make_frequency_table_from_file(&filepath, chunks);
-    println!("{:?}", sort_hash_map(&freq_table))
+    let (chunks, threshold) = (100, 10);
+    let mut compressed_random_text = Default::default();
+    let random_text = generate_random_l_gram(chunks, UKR_ALPHABET.len(), &UKR_ALPHABET);
+    compressed_random_text = compress(random_text.as_bytes());
+
+    println!("{random_text} -- {} -- {:?}", compressed_random_text.len(), compressed_random_text)
 }

@@ -12,3 +12,6 @@ rayon = "1.8.0"
 rand = "0.8.5"
 lazy_static = { version = "1.4.0", features = [] }
 chrono = {version = "0.4.31"}
+deflate = "1.0.0"
+compress = "0.2.1"
+rust-lzma = "0.6.0"

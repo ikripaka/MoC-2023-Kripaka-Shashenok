@@ -1,9 +1,5 @@
-use crate::internals::{
-    calculate_probs, generate_affine_distortion, generate_random_n_l_grams, make_frequency_table,
-    make_frequency_table_from_file, make_n_gram_on_content_from_str,
-    recurrent_generation_n_l_grams, vigenere_cipher_distortion,
-};
-use crate::{L1, L2, L3, L4, L_BIGRAM, L_THREE_GRAM, N1, R1, R2, R3, UKR_ALPHABET};
+use crate::internals::{bigram_affine_distortion, calculate_probs, divide_into_l_grams, double_content, generate_affine_distortion, generate_random_n_l_grams, make_frequency_table, make_frequency_table_custom_manual, make_frequency_table_for_long_chunks, make_frequency_table_from_file, make_n_gram_on_content_from_str, recurrent_generation_n_l_grams, vigenere_cipher_distortion};
+use crate::{L1, L2, L3, L4, L_BIGRAM, L_THREE_GRAM, N1, N2, R1, R2, R3, UKR_ALPHABET};
 use chrono::Local;
 use dotenv::dotenv;
 use std::collections::HashMap;
@@ -17,6 +13,14 @@ pub fn run(filepath: &str) {
     let mut file = File::open(filepath).unwrap();
     let mut content = String::new();
     file.read_to_string(&mut content);
+    let content_for_analysis = double_content(&content);
+
+    // у більшості l грами по яким робимо дослідження просто напросто не знаходять заборонені н грами у тексті
+    // тобто вони знаходяться, але таких великих значень немає, щоб побороти той поріг частоти
+    //
+    // тут можна сказати, що є багато н грам, що зустрічаються меншу кількість разів
+    // тобто н грами, що не зустрічаються і відповідно 1 > 0
+    // f_x > k_x у більшості випадків якраз виконується
 
     // #0
     let (
@@ -27,7 +31,7 @@ pub fn run(filepath: &str) {
         mut res1_2,
         mut res1_3,
         mut res1_4,
-    ) = Default::default();
+    ): ((u64, u64), (u64, u64), (u64, u64), (u64, u64), (u64, u64), (u64, u64), (u64, u64)) = Default::default();
     let (
         mut res2_0,
         mut res2_1_r1,
@@ -36,7 +40,7 @@ pub fn run(filepath: &str) {
         mut res2_2,
         mut res2_3,
         mut res2_4,
-    ) = Default::default();
+    ): ((u64, u64), (u64, u64), (u64, u64), (u64, u64), (u64, u64), (u64, u64), (u64, u64)) = Default::default();
 
     let (
         mut res3_0,
@@ -46,7 +50,7 @@ pub fn run(filepath: &str) {
         mut res3_2,
         mut res3_3,
         mut res3_4,
-    ) = Default::default();
+    ): ((u64, u64), (u64, u64), (u64, u64), (u64, u64), (u64, u64), (u64, u64), (u64, u64)) = Default::default();
     let (
         mut res4_0,
         mut res4_1_r1,
@@ -55,12 +59,12 @@ pub fn run(filepath: &str) {
         mut res4_2,
         mut res4_3,
         mut res4_4,
-    ) = Default::default();
+    ): ((u64, u64), (u64, u64), (u64, u64), (u64, u64), (u64, u64), (u64, u64), (u64, u64)) = Default::default();
 
     // calculating frequency tables for text
     let (
-        mut bigram,
-        mut three_gram,
+        mut freq_table_bigram,
+        mut freq_table_three_gram,
         mut freq_table_l1,
         mut freq_table_l2,
         mut freq_table_l3,
@@ -68,22 +72,28 @@ pub fn run(filepath: &str) {
     ) = Default::default();
     rayon::scope(|s| {
         s.spawn(|_s| {
-            bigram = make_frequency_table(&content, L_BIGRAM);
+            freq_table_bigram = make_frequency_table_for_long_chunks(&content, L_BIGRAM, 0..L_BIGRAM);
+            println!("freq_table_bigram DONE")
         });
         s.spawn(|_s| {
-            three_gram = make_frequency_table(&content, L_THREE_GRAM);
+            freq_table_three_gram = make_frequency_table_for_long_chunks(&content, L_THREE_GRAM, 0..L_THREE_GRAM);
+            println!("freq_table_three_gram DONE")
         });
         s.spawn(|_s| {
-            freq_table_l1 = make_frequency_table(&content, L1);
+            freq_table_l1 = make_frequency_table_for_long_chunks(&content, L1, 0..L1);
+            println!("freq_table_l1 DONE")
         });
         s.spawn(|_s| {
-            freq_table_l2 = make_frequency_table(&content, L2);
+            freq_table_l2 = make_frequency_table_for_long_chunks(&content, L2, 0..L2);
+            println!("freq_table_l2 DONE")
         });
         s.spawn(|_s| {
-            freq_table_l3 = make_frequency_table(&content, L3);
+            freq_table_l3 = make_frequency_table_custom_manual(&content, L3);
+            println!("freq_table_l3 DONE")
         });
         s.spawn(|_s| {
-            freq_table_l4 = make_frequency_table(&content, L4);
+            freq_table_l4 = make_frequency_table_custom_manual(&content, L4);
+            println!("freq_table_l4 DONE")
         });
     });
     println!("Frequency tables are calculated (criterion_1_2)");
@@ -95,10 +105,10 @@ pub fn run(filepath: &str) {
         mut freq_table_prh_l3,
         mut freq_table_prh_l4,
     ) = Default::default();
-    freq_table_prh_l1 = vec![&bigram, &three_gram, &freq_table_l1];
-    freq_table_prh_l2 = vec![&bigram, &three_gram, &freq_table_l2];
-    freq_table_prh_l3 = vec![&bigram, &three_gram, &freq_table_l3];
-    freq_table_prh_l4 = vec![&bigram, &three_gram, &freq_table_l4];
+    freq_table_prh_l1 = vec![&freq_table_bigram, &freq_table_three_gram, &freq_table_l1];
+    freq_table_prh_l2 = vec![&freq_table_bigram, &freq_table_three_gram, &freq_table_l2];
+    freq_table_prh_l3 = vec![&freq_table_bigram, &freq_table_three_gram, &freq_table_l3];
+    freq_table_prh_l4 = vec![&freq_table_bigram, &freq_table_three_gram, &freq_table_l4];
     println!("Gained real frequency tables for detection of prohibited n grams (criterion_1_2)");
 
     let (mut n_gram_l1, mut n_gram_l2, mut n_gram_l3, mut n_gram_l4): (
@@ -107,20 +117,13 @@ pub fn run(filepath: &str) {
         Vec<String>,
         Vec<String>,
     ) = (vec![], vec![], vec![], vec![]);
-    rayon::scope(|s| {
-        s.spawn(|_s| {
-            n_gram_l1 = make_n_gram_on_content_from_str(L1, &content);
-        });
-        s.spawn(|_s| {
-            n_gram_l2 = make_n_gram_on_content_from_str(L2, &content);
-        });
-        s.spawn(|_s| {
-            n_gram_l3 = make_n_gram_on_content_from_str(L3, &content);
-        });
-        s.spawn(|_s| {
-            n_gram_l4 = make_n_gram_on_content_from_str(L4, &content);
-        });
-    });
+    divide_into_l_grams(
+        &mut n_gram_l1,
+        &mut n_gram_l2,
+        &mut n_gram_l3,
+        &mut n_gram_l4,
+        &content_for_analysis,
+    );
     println!("N grams are made (criterion_1_2)");
 
     let (
@@ -168,6 +171,7 @@ pub fn run(filepath: &str) {
         });
         s.spawn(|_s| {
             // n_gram_l1.truncate(N1);
+            // distorted_n_grams_l1_2 = bigram_affine_distortion(&n_gram_l1, &UKR_ALPHABET);
             distorted_n_grams_l1_2 = generate_affine_distortion(L1, &n_gram_l1, &UKR_ALPHABET);
         });
         s.spawn(|_s| {
@@ -187,6 +191,7 @@ pub fn run(filepath: &str) {
             distorted_n_grams_l2_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l2, &UKR_ALPHABET);
         });
         s.spawn(|_s| {
+            // distorted_n_grams_l2_2 = bigram_affine_distortion(&n_gram_l2, &UKR_ALPHABET);
             distorted_n_grams_l2_2 = generate_affine_distortion(L2, &n_gram_l2, &UKR_ALPHABET);
         });
         s.spawn(|_s| {
@@ -206,6 +211,7 @@ pub fn run(filepath: &str) {
             distorted_n_grams_l3_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l3, &UKR_ALPHABET);
         });
         s.spawn(|_s| {
+            // distorted_n_grams_l3_2 = bigram_affine_distortion(&n_gram_l3, &UKR_ALPHABET);
             distorted_n_grams_l3_2 = generate_affine_distortion(L3, &n_gram_l3, &UKR_ALPHABET);
         });
         s.spawn(|_s| {
@@ -225,13 +231,14 @@ pub fn run(filepath: &str) {
             distorted_n_grams_l4_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l4, &UKR_ALPHABET);
         });
         s.spawn(|_s| {
+            // distorted_n_grams_l4_2 = bigram_affine_distortion(&n_gram_l4, &UKR_ALPHABET);
             distorted_n_grams_l4_2 = generate_affine_distortion(L4, &n_gram_l4, &UKR_ALPHABET);
         });
         s.spawn(|_s| {
-            distorted_n_grams_l4_3 = generate_random_n_l_grams(L4, N1, &UKR_ALPHABET);
+            distorted_n_grams_l4_3 = generate_random_n_l_grams(L4, N2, &UKR_ALPHABET);
         });
         s.spawn(|_s| {
-            distorted_n_grams_l4_4 = recurrent_generation_n_l_grams(L4, N1, &UKR_ALPHABET);
+            distorted_n_grams_l4_4 = recurrent_generation_n_l_grams(L4, N2, &UKR_ALPHABET);
         });
     });
     println!("Distorted N grams are made (criterion_1_2)");
@@ -608,39 +615,39 @@ pub fn run(filepath: &str) {
     println!(
         "Result: \
 
-        \n\t (criterion_1_2) [res1_0](h0, h1): {:?}, (alpha, beta): {:?} \
-        \n\t (criterion_1_2) [res_1_r1](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_1_r2](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_1_r3](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_1_2](h0, h1): {:?}, (alpha, beta): {:?} , \
-        \n\t (criterion_1_2) [res_1_3](h0, h1): {:?}, (alpha, beta): {:?} \
-        \n\t (criterion_1_2) [res_1_4](h0, h1): {:?}, (alpha, beta): {:?} \
+        \n\t (criterion_1_2) [res1_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
+        \n\t (criterion_1_2) [res_1_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_1_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_1_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_1_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} , \
+        \n\t (criterion_1_2) [res_1_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
+        \n\t (criterion_1_2) [res_1_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
 
-        \n\t (criterion_1_2) [res_2_0](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_2_r1](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_2_r2](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_2_r3](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_2_2](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_2_3](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_2_4](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_2) [res_2_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_2_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_2_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_2_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_2_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_2_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_2_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
 
-        \n\t (criterion_1_2) [res_3_0](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_3_r1](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_3_r2](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_3_r3](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_3_2](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_3_3](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_3_4](h0, h1): {:?}, (alpha, beta): {:?}\
+        \n\t (criterion_1_2) [res_3_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_3_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_3_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_3_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_3_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_3_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_3_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
 
-        \n\t (criterion_1_2) [res_4_0](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_4_r1](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_4_r2](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_4_r3](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_4_2](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_4_3](h0, h1): {:?}, (alpha, beta): {:?}\
-        \n\t (criterion_1_2) [res_4_4](h0, h1): {:?}, (alpha, beta): {:?}\
-
+        \n\t (criterion_1_2) [res_4_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_4_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_4_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_4_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_4_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_4_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2) [res_4_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
                 ",
+
         res1_0,
         calculate_probs(res1_0.0, res1_0.1, n_gram_l1.len()),
         res1_1_r1,
@@ -715,14 +722,20 @@ fn criterion_1_2(
             s.spawn(|_s| {
                 has_prohibited_bigram = {
                     let mut res = false;
-                    for (key, val) in is_n_gram_prohibited_with_custom_l_grams(
+                    let hash_map = is_n_gram_prohibited_with_custom_l_grams(
                         l_gram,
                         freq_table_prh[0],
                         freq_table_threshold,
                         l_grams_len[0],
-                    )
+                    );
+                    // println!("map: {:?}", hash_map);
+                    for (key, val) in hash_map
                     .iter()
                     {
+                        // if key == ""{
+                        //     println!()
+                        // }
+                        // println!("0: {key} -- {val} > {:?}", freq_table_prh[0].get(key));
                         if *val
                             > match freq_table_prh[0].get(key) {
                                 None => 0,
@@ -739,14 +752,20 @@ fn criterion_1_2(
             s.spawn(|_s| {
                 has_prohibited_three_gram = {
                     let mut res = false;
-                    for (key, val) in is_n_gram_prohibited_with_custom_l_grams(
+                    let map = is_n_gram_prohibited_with_custom_l_grams(
                         l_gram,
                         freq_table_prh[1],
                         freq_table_threshold,
                         l_grams_len[1],
-                    )
+                    );
+                    // println!("1 -- map: {:?}", map);
+                    for (key, val) in map
                     .iter()
                     {
+                        // if key == ""{
+                        //     println!()
+                        // }
+                        // println!("1: {key} -- {val} > {:?}", freq_table_prh[1].get(key));
                         if *val
                             > match freq_table_prh[1].get(key) {
                                 None => 0,
@@ -767,6 +786,10 @@ fn criterion_1_2(
                         freq_table_prh[2],
                         freq_table_threshold,
                     );
+                    // if key == ""{
+                    //     println!()
+                    // }
+                    // println!("2: {key} -- {val} > {:?}", freq_table_prh[2].get(&key));
                     val > match freq_table_prh[2].get(&key) {
                         None => 0,
                         Some(val) => *val,
@@ -774,6 +797,7 @@ fn criterion_1_2(
                 };
             });
         });
+        println!("{has_prohibited_bigram}, {has_prohibited_three_gram}, {has_prohibited_l_gram }");
         if has_prohibited_bigram || has_prohibited_three_gram || has_prohibited_l_gram {
             h_1 += 1;
         } else {
