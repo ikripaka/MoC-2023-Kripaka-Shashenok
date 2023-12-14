@@ -1,12 +1,12 @@
-use crate::internals::{bigram_affine_distortion, calculate_probs, double_content, generate_affine_distortion, generate_random_l_gram, generate_random_n_l_grams, make_frequency_table, make_frequency_table_from_file, make_n_gram_on_content_from_str, make_n_gram_on_file_content, recurrent_generation_n_l_grams, vigenere_cipher_distortion};
-use crate::{L1, L2, L3, L4, L_BIGRAM, L_THREE_GRAM, N1, R1, R2, R3, UKR_ALPHABET};
-use chrono::Local;
-use dotenv::dotenv;
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::{Read, Write};
-use deflate::Compression;
+
+use chrono::Local;
 use deflate::write::ZlibEncoder;
+use dotenv::dotenv;
+
+use crate::{L1, L2, L3, L4, L_BIGRAM, L_THREE_GRAM, N1, R1, R2, R3, UKR_ALPHABET};
+use crate::internals::{calculate_probs, double_content, gen_affine_distortion, gen_random_l_gram_char_alphabet, gen_random_n_l_grams, make_frequency_table, make_n_gram_on_content_from_str, recurrent_generation_n_l_grams, vigenere_cipher_distortion};
 
 pub fn run(filepath: &str) {
     let time_prev = Local::now();
@@ -147,412 +147,415 @@ pub fn run(filepath: &str) {
         mut distorted_n_grams_l4_4,
     ) = Default::default();
 
-    rayon::scope(|s| {
-        s.spawn(|_s| {
-            distorted_n_grams_l1_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l1, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l1_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l1, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l1_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l1, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            // n_gram_l1.truncate(N1);
-            // distorted_n_grams_l1_2 = bigram_affine_distortion(&n_gram_l1, &UKR_ALPHABET);
-            distorted_n_grams_l1_2 = generate_affine_distortion(L1, &n_gram_l1, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l1_3 = generate_random_n_l_grams(L1, N1, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l1_4 = recurrent_generation_n_l_grams(L1, N1, &UKR_ALPHABET);
-        });
 
-        s.spawn(|_s| {
-            distorted_n_grams_l2_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l2, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l2_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l2, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l2_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l2, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            // distorted_n_grams_l2_2 = bigram_affine_distortion(&n_gram_l2, &UKR_ALPHABET);
-            distorted_n_grams_l2_2 = generate_affine_distortion(L2, &n_gram_l2, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l2_3 = generate_random_n_l_grams(L2, N1, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l2_4 = recurrent_generation_n_l_grams(L2, N1, &UKR_ALPHABET);
-        });
+    for l_little in 1..=2 {
+        rayon::scope(|s| {
+            s.spawn(|_s| {
+                distorted_n_grams_l1_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l1, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                distorted_n_grams_l1_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l1, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                distorted_n_grams_l1_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l1, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                // n_gram_l1.truncate(N1);
+                // distorted_n_grams_l1_2 = bigram_affine_distortion(&n_gram_l1, &UKR_ALPHABET);
+                distorted_n_grams_l1_2 = gen_affine_distortion(&n_gram_l1, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                distorted_n_grams_l1_3 = gen_random_n_l_grams(L1, N1, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                distorted_n_grams_l1_4 = recurrent_generation_n_l_grams(L1, N1, &UKR_ALPHABET, l_little);
+            });
 
-        s.spawn(|_s| {
-            distorted_n_grams_l3_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l3, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l3_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l3, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l3_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l3, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            // distorted_n_grams_l3_2 = bigram_affine_distortion(&n_gram_l3, &UKR_ALPHABET);
-            distorted_n_grams_l3_2 = generate_affine_distortion(L3, &n_gram_l3, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l3_3 = generate_random_n_l_grams(L3, N1, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l3_4 = recurrent_generation_n_l_grams(L3, N1, &UKR_ALPHABET);
-        });
+            s.spawn(|_s| {
+                distorted_n_grams_l2_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l2, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                distorted_n_grams_l2_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l2, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                distorted_n_grams_l2_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l2, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                // distorted_n_grams_l2_2 = bigram_affine_distortion(&n_gram_l2, &UKR_ALPHABET);
+                distorted_n_grams_l2_2 = gen_affine_distortion(&n_gram_l2, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                distorted_n_grams_l2_3 = gen_random_n_l_grams(L2, N1, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                distorted_n_grams_l2_4 = recurrent_generation_n_l_grams(L2, N1, &UKR_ALPHABET, l_little);
+            });
 
-        s.spawn(|_s| {
-            distorted_n_grams_l4_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l4, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l4_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l4, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l4_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l4, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            // distorted_n_grams_l4_2 = bigram_affine_distortion(&n_gram_l4, &UKR_ALPHABET);
-            distorted_n_grams_l4_2 = generate_affine_distortion(L4, &n_gram_l4, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l4_3 = generate_random_n_l_grams(L4, N1, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l4_4 = recurrent_generation_n_l_grams(L4, N1, &UKR_ALPHABET);
-        });
-    });
-    println!("Distorted N grams are made (struct_deflate)");
+            s.spawn(|_s| {
+                distorted_n_grams_l3_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l3, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                distorted_n_grams_l3_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l3, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                distorted_n_grams_l3_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l3, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                // distorted_n_grams_l3_2 = bigram_affine_distortion(&n_gram_l3, &UKR_ALPHABET);
+                distorted_n_grams_l3_2 = gen_affine_distortion(&n_gram_l3, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                distorted_n_grams_l3_3 = gen_random_n_l_grams(L3, N1, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                distorted_n_grams_l3_4 = recurrent_generation_n_l_grams(L3, N1, &UKR_ALPHABET, l_little);
+            });
 
-    rayon::scope(|s| {
-        s.spawn(|_s| {
-            res1_0 = struct_deflate(L1, &n_gram_l1, threshold);
+            s.spawn(|_s| {
+                distorted_n_grams_l4_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l4, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                distorted_n_grams_l4_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l4, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                distorted_n_grams_l4_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l4, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                // distorted_n_grams_l4_2 = bigram_affine_distortion(&n_gram_l4, &UKR_ALPHABET);
+                distorted_n_grams_l4_2 = gen_affine_distortion(&n_gram_l4, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                distorted_n_grams_l4_3 = gen_random_n_l_grams(L4, N1, &UKR_ALPHABET, l_little);
+            });
+            s.spawn(|_s| {
+                distorted_n_grams_l4_4 = recurrent_generation_n_l_grams(L4, N1, &UKR_ALPHABET, l_little);
+            });
         });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res1_1_r1 = struct_deflate(L1, &distorted_n_grams_l1_1_r1.0, threshold);
-            println!(
-                "res1_1_r1 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            )
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res1_1_r2 = struct_deflate(L1, &distorted_n_grams_l1_1_r2.0, threshold);
-            println!(
-                "res1_1_r2 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            )
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res1_1_r3 = struct_deflate(L1, &distorted_n_grams_l1_1_r3.0, threshold);
-            println!(
-                "res1_1_r3 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            )
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res1_2 = struct_deflate(L1, &distorted_n_grams_l1_2.0, threshold);
-            println!(
-                "res1_2 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            )
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res1_3 = struct_deflate(L1, &distorted_n_grams_l1_3, threshold);
-            println!(
-                "res1_3 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            )
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res1_4 = struct_deflate(L1, &distorted_n_grams_l1_4, threshold);
-            println!(
-                "res1_4 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            )
-        });
+        println!("Distorted N grams are made (struct_deflate)");
 
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res2_0 = struct_deflate(L2, &n_gram_l2, threshold);
-            println!(
-                "res2_0 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            )
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res2_1_r1 = struct_deflate(L2, &distorted_n_grams_l2_1_r1.0, threshold);
-            println!(
-                "res2_1_r1 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            )
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res2_1_r2 = struct_deflate(L2, &distorted_n_grams_l2_1_r2.0, threshold);
-            println!(
-                "res2_1_r2 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            )
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res2_1_r3 = struct_deflate(L2, &distorted_n_grams_l2_1_r3.0, threshold);
-            println!(
-                "res2_1_r3 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            )
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res2_2 = struct_deflate(L2, &distorted_n_grams_l2_2.0, threshold);
-            println!(
-                "res2_2 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            )
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res2_3 = struct_deflate(L2, &distorted_n_grams_l2_3, threshold);
-            println!(
-                "res2_3 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            )
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res2_4 = struct_deflate(L2, &distorted_n_grams_l2_4, threshold);
-            println!(
-                "res2_4 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            );
-        });
+        rayon::scope(|s| {
+            s.spawn(|_s| {
+                res1_0 = struct_deflate(L1, &n_gram_l1, threshold);
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res1_1_r1 = struct_deflate(L1, &distorted_n_grams_l1_1_r1.0, threshold);
+                println!(
+                    "res1_1_r1 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                )
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res1_1_r2 = struct_deflate(L1, &distorted_n_grams_l1_1_r2.0, threshold);
+                println!(
+                    "res1_1_r2 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                )
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res1_1_r3 = struct_deflate(L1, &distorted_n_grams_l1_1_r3.0, threshold);
+                println!(
+                    "res1_1_r3 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                )
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res1_2 = struct_deflate(L1, &distorted_n_grams_l1_2.0, threshold);
+                println!(
+                    "res1_2 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                )
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res1_3 = struct_deflate(L1, &distorted_n_grams_l1_3, threshold);
+                println!(
+                    "res1_3 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                )
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res1_4 = struct_deflate(L1, &distorted_n_grams_l1_4, threshold);
+                println!(
+                    "res1_4 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                )
+            });
 
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res3_0 = struct_deflate(L3, &n_gram_l3, threshold);
-            println!(
-                "res3_0 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            );
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res3_1_r1 = struct_deflate(L3, &distorted_n_grams_l3_1_r1.0, threshold);
-            println!(
-                "res3_1_r1 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            );
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res3_1_r2 = struct_deflate(L3, &distorted_n_grams_l3_1_r2.0, threshold);
-            println!(
-                "res3_1_r2 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            );
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res3_1_r3 = struct_deflate(L3, &distorted_n_grams_l3_1_r3.0, threshold);
-            println!(
-                "res3_1_r3 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            );
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res3_2 = struct_deflate(L3, &distorted_n_grams_l3_2.0, threshold);
-            println!(
-                "res3_2 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            );
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res3_3 = struct_deflate(L3, &distorted_n_grams_l3_3, threshold);
-            println!(
-                "res3_3 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            );
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res3_4 = struct_deflate(L3, &distorted_n_grams_l3_4, threshold);
-            println!(
-                "res3_4 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            );
-        });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res2_0 = struct_deflate(L2, &n_gram_l2, threshold);
+                println!(
+                    "res2_0 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                )
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res2_1_r1 = struct_deflate(L2, &distorted_n_grams_l2_1_r1.0, threshold);
+                println!(
+                    "res2_1_r1 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                )
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res2_1_r2 = struct_deflate(L2, &distorted_n_grams_l2_1_r2.0, threshold);
+                println!(
+                    "res2_1_r2 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                )
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res2_1_r3 = struct_deflate(L2, &distorted_n_grams_l2_1_r3.0, threshold);
+                println!(
+                    "res2_1_r3 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                )
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res2_2 = struct_deflate(L2, &distorted_n_grams_l2_2.0, threshold);
+                println!(
+                    "res2_2 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                )
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res2_3 = struct_deflate(L2, &distorted_n_grams_l2_3, threshold);
+                println!(
+                    "res2_3 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                )
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res2_4 = struct_deflate(L2, &distorted_n_grams_l2_4, threshold);
+                println!(
+                    "res2_4 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                );
+            });
 
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res4_0 = struct_deflate(L4, &n_gram_l4, threshold);
-            println!(
-                "res4_0 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            );
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res4_1_r1 = struct_deflate(L4, &distorted_n_grams_l4_1_r1.0, threshold);
-            println!(
-                "res4_1_r1 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            );
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res4_1_r2 = struct_deflate(L4, &distorted_n_grams_l4_1_r2.0, threshold);
-            println!(
-                "res4_1_r2 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            );
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res4_1_r3 = struct_deflate(L4, &distorted_n_grams_l4_1_r3.0, threshold);
-            println!(
-                "res4_1_r3 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            );
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res4_2 = struct_deflate(L4, &distorted_n_grams_l4_2.0, threshold);
-            println!(
-                "res4_2 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            );
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res4_3 = struct_deflate(L4, &distorted_n_grams_l4_3, threshold);
-            println!(
-                "res4_3 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            );
-        });
-        s.spawn(|_s| {
-            let time_prev_local = Local::now();
-            res4_4 = struct_deflate(L4, &distorted_n_grams_l4_4, threshold);
-            println!(
-                "res4_4 FINISHED!! Time:{}",
-                (Local::now() - time_prev_local).num_minutes()
-            );
-        });
-    });
-    println!(
-        "IT FINALLY FINISHED!! Time:{}",
-        (Local::now() - time_prev).num_minutes()
-    );
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res3_0 = struct_deflate(L3, &n_gram_l3, threshold);
+                println!(
+                    "res3_0 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                );
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res3_1_r1 = struct_deflate(L3, &distorted_n_grams_l3_1_r1.0, threshold);
+                println!(
+                    "res3_1_r1 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                );
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res3_1_r2 = struct_deflate(L3, &distorted_n_grams_l3_1_r2.0, threshold);
+                println!(
+                    "res3_1_r2 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                );
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res3_1_r3 = struct_deflate(L3, &distorted_n_grams_l3_1_r3.0, threshold);
+                println!(
+                    "res3_1_r3 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                );
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res3_2 = struct_deflate(L3, &distorted_n_grams_l3_2.0, threshold);
+                println!(
+                    "res3_2 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                );
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res3_3 = struct_deflate(L3, &distorted_n_grams_l3_3, threshold);
+                println!(
+                    "res3_3 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                );
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res3_4 = struct_deflate(L3, &distorted_n_grams_l3_4, threshold);
+                println!(
+                    "res3_4 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                );
+            });
 
-    println!(
-        "Result: \
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res4_0 = struct_deflate(L4, &n_gram_l4, threshold);
+                println!(
+                    "res4_0 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                );
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res4_1_r1 = struct_deflate(L4, &distorted_n_grams_l4_1_r1.0, threshold);
+                println!(
+                    "res4_1_r1 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                );
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res4_1_r2 = struct_deflate(L4, &distorted_n_grams_l4_1_r2.0, threshold);
+                println!(
+                    "res4_1_r2 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                );
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res4_1_r3 = struct_deflate(L4, &distorted_n_grams_l4_1_r3.0, threshold);
+                println!(
+                    "res4_1_r3 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                );
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res4_2 = struct_deflate(L4, &distorted_n_grams_l4_2.0, threshold);
+                println!(
+                    "res4_2 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                );
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res4_3 = struct_deflate(L4, &distorted_n_grams_l4_3, threshold);
+                println!(
+                    "res4_3 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                );
+            });
+            s.spawn(|_s| {
+                let time_prev_local = Local::now();
+                res4_4 = struct_deflate(L4, &distorted_n_grams_l4_4, threshold);
+                println!(
+                    "res4_4 FINISHED!! Time:{}",
+                    (Local::now() - time_prev_local).num_minutes()
+                );
+            });
+        });
+        println!(
+            "IT FINALLY FINISHED!! Time:{}",
+            (Local::now() - time_prev).num_minutes()
+        );
 
-        \n\t (struct_deflate) [res1_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
-        \n\t (struct_deflate) [res_1_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_1_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_1_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_1_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} , \
-        \n\t (struct_deflate) [res_1_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
-        \n\t (struct_deflate) [res_1_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
+        println!(
+            "Result: \
 
-        \n\t (struct_deflate) [res_2_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_2_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_2_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_2_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_2_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_2_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_2_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res1_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
+        \n\t (struct_deflate) [l: {l_little}] [res_1_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_1_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_1_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_1_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} , \
+        \n\t (struct_deflate) [l: {l_little}] [res_1_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
+        \n\t (struct_deflate) [l: {l_little}] [res_1_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
 
-        \n\t (struct_deflate) [res_3_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_3_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_3_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_3_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_3_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_3_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_3_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_2_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_2_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_2_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_2_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_2_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_2_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_2_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
 
-        \n\t (struct_deflate) [res_4_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_4_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_4_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_4_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_4_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_4_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (struct_deflate) [res_4_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_3_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_3_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_3_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_3_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_3_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_3_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_3_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+
+        \n\t (struct_deflate) [l: {l_little}] [res_4_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_4_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_4_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_4_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_4_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_4_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (struct_deflate) [l: {l_little}] [res_4_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
 
                 ",
-        res1_0,
-        calculate_probs(res1_0.0, res1_0.1, n_gram_l1.len()),
-        res1_1_r1,
-        calculate_probs(res1_1_r1.0, res1_1_r1.1, distorted_n_grams_l1_1_r1.0.len()),
-        res1_1_r2,
-        calculate_probs(res1_1_r2.0, res1_1_r2.1, distorted_n_grams_l1_1_r2.0.len()),
-        res1_1_r3,
-        calculate_probs(res1_1_r3.0, res1_1_r3.1, distorted_n_grams_l1_1_r3.0.len()),
-        res1_2,
-        calculate_probs(res1_2.0, res1_2.1, distorted_n_grams_l1_2.0.len()),
-        res1_3,
-        calculate_probs(res1_3.0, res1_3.1, distorted_n_grams_l1_3.len()),
-        res1_4,
-        calculate_probs(res1_4.0, res1_4.1, distorted_n_grams_l1_4.len()),
-        res2_0,
-        calculate_probs(res2_0.0, res2_0.1, n_gram_l2.len()),
-        res2_1_r1,
-        calculate_probs(res2_1_r1.0, res2_1_r1.1, distorted_n_grams_l2_1_r1.0.len()),
-        res2_1_r2,
-        calculate_probs(res2_1_r2.0, res2_1_r2.1, distorted_n_grams_l2_1_r2.0.len()),
-        res2_1_r3,
-        calculate_probs(res2_1_r3.0, res2_1_r3.1, distorted_n_grams_l2_1_r3.0.len()),
-        res2_2,
-        calculate_probs(res2_2.0, res2_2.1, distorted_n_grams_l2_2.0.len()),
-        res2_3,
-        calculate_probs(res2_3.0, res2_3.1, distorted_n_grams_l2_3.len()),
-        res2_4,
-        calculate_probs(res2_4.0, res2_4.1, distorted_n_grams_l2_4.len()),
-        res3_0,
-        calculate_probs(res3_0.0, res3_0.1, n_gram_l3.len()),
-        res3_1_r1,
-        calculate_probs(res3_1_r1.0, res3_1_r1.1, distorted_n_grams_l3_1_r1.0.len()),
-        res3_1_r2,
-        calculate_probs(res3_1_r2.0, res3_1_r2.1, distorted_n_grams_l3_1_r2.0.len()),
-        res3_1_r3,
-        calculate_probs(res3_1_r3.0, res3_1_r3.1, distorted_n_grams_l3_1_r3.0.len()),
-        res3_2,
-        calculate_probs(res3_2.0, res3_2.1, distorted_n_grams_l3_2.0.len()),
-        res3_3,
-        calculate_probs(res3_3.0, res3_3.1, distorted_n_grams_l3_3.len()),
-        res3_4,
-        calculate_probs(res3_4.0, res3_4.1, distorted_n_grams_l3_4.len()),
-        res4_0,
-        calculate_probs(res4_0.0, res4_0.1, n_gram_l4.len()),
-        res4_1_r1,
-        calculate_probs(res4_1_r1.0, res4_1_r1.1, distorted_n_grams_l4_1_r1.0.len()),
-        res4_1_r2,
-        calculate_probs(res4_1_r2.0, res4_1_r2.1, distorted_n_grams_l4_1_r2.0.len()),
-        res4_1_r3,
-        calculate_probs(res4_1_r3.0, res4_1_r3.1, distorted_n_grams_l4_1_r3.0.len()),
-        res4_2,
-        calculate_probs(res4_2.0, res4_2.1, distorted_n_grams_l4_2.0.len()),
-        res4_3,
-        calculate_probs(res4_3.0, res4_3.1, distorted_n_grams_l4_3.len()),
-        res4_4,
-        calculate_probs(res4_4.0, res4_4.1, distorted_n_grams_l4_4.len()),
-    )
+            res1_0,
+            calculate_probs(res1_0.0, res1_0.1, n_gram_l1.len()),
+            res1_1_r1,
+            calculate_probs(res1_1_r1.0, res1_1_r1.1, distorted_n_grams_l1_1_r1.0.len()),
+            res1_1_r2,
+            calculate_probs(res1_1_r2.0, res1_1_r2.1, distorted_n_grams_l1_1_r2.0.len()),
+            res1_1_r3,
+            calculate_probs(res1_1_r3.0, res1_1_r3.1, distorted_n_grams_l1_1_r3.0.len()),
+            res1_2,
+            calculate_probs(res1_2.0, res1_2.1, distorted_n_grams_l1_2.0.len()),
+            res1_3,
+            calculate_probs(res1_3.0, res1_3.1, distorted_n_grams_l1_3.len()),
+            res1_4,
+            calculate_probs(res1_4.0, res1_4.1, distorted_n_grams_l1_4.len()),
+            res2_0,
+            calculate_probs(res2_0.0, res2_0.1, n_gram_l2.len()),
+            res2_1_r1,
+            calculate_probs(res2_1_r1.0, res2_1_r1.1, distorted_n_grams_l2_1_r1.0.len()),
+            res2_1_r2,
+            calculate_probs(res2_1_r2.0, res2_1_r2.1, distorted_n_grams_l2_1_r2.0.len()),
+            res2_1_r3,
+            calculate_probs(res2_1_r3.0, res2_1_r3.1, distorted_n_grams_l2_1_r3.0.len()),
+            res2_2,
+            calculate_probs(res2_2.0, res2_2.1, distorted_n_grams_l2_2.0.len()),
+            res2_3,
+            calculate_probs(res2_3.0, res2_3.1, distorted_n_grams_l2_3.len()),
+            res2_4,
+            calculate_probs(res2_4.0, res2_4.1, distorted_n_grams_l2_4.len()),
+            res3_0,
+            calculate_probs(res3_0.0, res3_0.1, n_gram_l3.len()),
+            res3_1_r1,
+            calculate_probs(res3_1_r1.0, res3_1_r1.1, distorted_n_grams_l3_1_r1.0.len()),
+            res3_1_r2,
+            calculate_probs(res3_1_r2.0, res3_1_r2.1, distorted_n_grams_l3_1_r2.0.len()),
+            res3_1_r3,
+            calculate_probs(res3_1_r3.0, res3_1_r3.1, distorted_n_grams_l3_1_r3.0.len()),
+            res3_2,
+            calculate_probs(res3_2.0, res3_2.1, distorted_n_grams_l3_2.0.len()),
+            res3_3,
+            calculate_probs(res3_3.0, res3_3.1, distorted_n_grams_l3_3.len()),
+            res3_4,
+            calculate_probs(res3_4.0, res3_4.1, distorted_n_grams_l3_4.len()),
+            res4_0,
+            calculate_probs(res4_0.0, res4_0.1, n_gram_l4.len()),
+            res4_1_r1,
+            calculate_probs(res4_1_r1.0, res4_1_r1.1, distorted_n_grams_l4_1_r1.0.len()),
+            res4_1_r2,
+            calculate_probs(res4_1_r2.0, res4_1_r2.1, distorted_n_grams_l4_1_r2.0.len()),
+            res4_1_r3,
+            calculate_probs(res4_1_r3.0, res4_1_r3.1, distorted_n_grams_l4_1_r3.0.len()),
+            res4_2,
+            calculate_probs(res4_2.0, res4_2.1, distorted_n_grams_l4_2.0.len()),
+            res4_3,
+            calculate_probs(res4_3.0, res4_3.1, distorted_n_grams_l4_3.len()),
+            res4_4,
+            calculate_probs(res4_4.0, res4_4.1, distorted_n_grams_l4_4.len()),
+        )
+    }
 }
 
 fn struct_deflate(
@@ -569,7 +572,7 @@ fn struct_deflate(
                 compressed_normal_text = compress(l_gram.as_bytes());
             });
             s.spawn(|_s| {
-                compressed_random_text = compress(generate_random_l_gram(l, UKR_ALPHABET.len(), &UKR_ALPHABET).as_bytes());
+                compressed_random_text = compress(gen_random_l_gram_char_alphabet(l, UKR_ALPHABET.len(), &UKR_ALPHABET).as_bytes());
             });
         });
         let compression_coef_normal = l as f64 / compressed_normal_text.len() as f64;
@@ -598,9 +601,9 @@ fn sorting() {
         .as_str()
         .to_string();
     let (chunks, threshold) = (100, 10);
-    let  mut compressed_random_text = Default::default();
-    let random_text = generate_random_l_gram(chunks, UKR_ALPHABET.len(), &UKR_ALPHABET);
+    let mut compressed_random_text = Default::default();
+    let random_text = gen_random_l_gram_char_alphabet(chunks, UKR_ALPHABET.len(), &UKR_ALPHABET);
     compressed_random_text = compress(random_text.as_bytes());
 
-    println!("{random_text} -- {} -- {:?}",compressed_random_text.len(), compressed_random_text)
+    println!("{random_text} -- {} -- {:?}", compressed_random_text.len(), compressed_random_text)
 }

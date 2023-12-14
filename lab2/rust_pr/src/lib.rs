@@ -1,5 +1,6 @@
 use lazy_static::lazy_static;
 use std::collections::HashMap;
+use crate::internals::make_n_gram_on_alphabet;
 
 pub mod criterions;
 pub mod internals;
@@ -17,9 +18,18 @@ lazy_static! {
         }
         m
     };
+    pub static ref UKR_BIGRAM_REVERSE_MAP: HashMap<String, u16> = {
+        let bigrams = make_n_gram_on_alphabet(L_BIGRAM, &UKR_ALPHABET);
+        let mut m = HashMap::new();
+        for i in 0..bigrams.len() {
+            m.insert(bigrams[i].clone(), i as u16);
+        }
+        m
+    };
 }
 
 pub const THRESHOLD: u64 = 10;
+pub const L_MONOGRAM: usize = 1;
 pub const L_BIGRAM: usize = 2;
 pub const L_THREE_GRAM: usize = 3;
 pub const R1: usize = 1;

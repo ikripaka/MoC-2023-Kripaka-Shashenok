@@ -1,4 +1,4 @@
-use crate::internals::{bigram_affine_distortion, calculate_probs, divide_into_l_grams, double_content, generate_affine_distortion, generate_random_n_l_grams, make_frequency_table, make_frequency_table_custom_manual, make_frequency_table_for_long_chunks, make_frequency_table_from_file, make_n_gram_on_content_from_str, recurrent_generation_n_l_grams, vigenere_cipher_distortion};
+use crate::internals::{gen_affine_distortion, calculate_probs, divide_into_l_grams, double_content, gen_random_n_l_grams, make_frequency_table, make_frequency_table_custom_manual, make_frequency_table_for_long_chunks, make_frequency_table_from_file, make_n_gram_on_content_from_str, recurrent_generation_n_l_grams, vigenere_cipher_distortion};
 use crate::{L1, L2, L3, L4, L_BIGRAM, L_THREE_GRAM, N1, N2, R1, R2, R3, UKR_ALPHABET};
 use chrono::Local;
 use dotenv::dotenv;
@@ -159,86 +159,83 @@ pub fn run(filepath: &str) {
         mut distorted_n_grams_l4_4,
     ) = Default::default();
 
+
+    for l_little in 1..=2{
     rayon::scope(|s| {
         s.spawn(|_s| {
-            distorted_n_grams_l1_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l1, &UKR_ALPHABET);
+            distorted_n_grams_l1_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l1, &UKR_ALPHABET, l_little);
         });
         s.spawn(|_s| {
-            distorted_n_grams_l1_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l1, &UKR_ALPHABET);
+            distorted_n_grams_l1_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l1, &UKR_ALPHABET, l_little);
         });
         s.spawn(|_s| {
-            distorted_n_grams_l1_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l1, &UKR_ALPHABET);
+            distorted_n_grams_l1_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l1, &UKR_ALPHABET, l_little);
         });
         s.spawn(|_s| {
-            // n_gram_l1.truncate(N1);
-            // distorted_n_grams_l1_2 = bigram_affine_distortion(&n_gram_l1, &UKR_ALPHABET);
-            distorted_n_grams_l1_2 = generate_affine_distortion(L1, &n_gram_l1, &UKR_ALPHABET);
+            distorted_n_grams_l1_2 = gen_affine_distortion(&n_gram_l1, &UKR_ALPHABET, l_little);
         });
         s.spawn(|_s| {
-            distorted_n_grams_l1_3 = generate_random_n_l_grams(L1, N1, &UKR_ALPHABET);
+            distorted_n_grams_l1_3 = gen_random_n_l_grams(L1, N1, &UKR_ALPHABET, l_little);
         });
         s.spawn(|_s| {
-            distorted_n_grams_l1_4 = recurrent_generation_n_l_grams(L1, N1, &UKR_ALPHABET);
+            distorted_n_grams_l1_4 = recurrent_generation_n_l_grams(L1, N1, &UKR_ALPHABET, l_little);
         });
 
         s.spawn(|_s| {
-            distorted_n_grams_l2_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l2, &UKR_ALPHABET);
+            distorted_n_grams_l2_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l2, &UKR_ALPHABET, l_little);
         });
         s.spawn(|_s| {
-            distorted_n_grams_l2_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l2, &UKR_ALPHABET);
+            distorted_n_grams_l2_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l2, &UKR_ALPHABET, l_little);
         });
         s.spawn(|_s| {
-            distorted_n_grams_l2_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l2, &UKR_ALPHABET);
+            distorted_n_grams_l2_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l2, &UKR_ALPHABET, l_little);
         });
         s.spawn(|_s| {
-            // distorted_n_grams_l2_2 = bigram_affine_distortion(&n_gram_l2, &UKR_ALPHABET);
-            distorted_n_grams_l2_2 = generate_affine_distortion(L2, &n_gram_l2, &UKR_ALPHABET);
+            distorted_n_grams_l2_2 = gen_affine_distortion(&n_gram_l2, &UKR_ALPHABET, l_little);
         });
         s.spawn(|_s| {
-            distorted_n_grams_l2_3 = generate_random_n_l_grams(L2, N1, &UKR_ALPHABET);
+            distorted_n_grams_l2_3 = gen_random_n_l_grams(L2, N1, &UKR_ALPHABET, l_little);
         });
         s.spawn(|_s| {
-            distorted_n_grams_l2_4 = recurrent_generation_n_l_grams(L2, N1, &UKR_ALPHABET);
-        });
-
-        s.spawn(|_s| {
-            distorted_n_grams_l3_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l3, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l3_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l3, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l3_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l3, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            // distorted_n_grams_l3_2 = bigram_affine_distortion(&n_gram_l3, &UKR_ALPHABET);
-            distorted_n_grams_l3_2 = generate_affine_distortion(L3, &n_gram_l3, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l3_3 = generate_random_n_l_grams(L3, N1, &UKR_ALPHABET);
-        });
-        s.spawn(|_s| {
-            distorted_n_grams_l3_4 = recurrent_generation_n_l_grams(L3, N1, &UKR_ALPHABET);
+            distorted_n_grams_l2_4 = recurrent_generation_n_l_grams(L2, N1, &UKR_ALPHABET, l_little);
         });
 
         s.spawn(|_s| {
-            distorted_n_grams_l4_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l4, &UKR_ALPHABET);
+            distorted_n_grams_l3_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l3, &UKR_ALPHABET, l_little);
         });
         s.spawn(|_s| {
-            distorted_n_grams_l4_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l4, &UKR_ALPHABET);
+            distorted_n_grams_l3_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l3, &UKR_ALPHABET, l_little);
         });
         s.spawn(|_s| {
-            distorted_n_grams_l4_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l4, &UKR_ALPHABET);
+            distorted_n_grams_l3_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l3, &UKR_ALPHABET, l_little);
         });
         s.spawn(|_s| {
-            // distorted_n_grams_l4_2 = bigram_affine_distortion(&n_gram_l4, &UKR_ALPHABET);
-            distorted_n_grams_l4_2 = generate_affine_distortion(L4, &n_gram_l4, &UKR_ALPHABET);
+            distorted_n_grams_l3_2 = gen_affine_distortion(&n_gram_l3, &UKR_ALPHABET, l_little);
         });
         s.spawn(|_s| {
-            distorted_n_grams_l4_3 = generate_random_n_l_grams(L4, N2, &UKR_ALPHABET);
+            distorted_n_grams_l3_3 = gen_random_n_l_grams(L3, N1, &UKR_ALPHABET, l_little);
         });
         s.spawn(|_s| {
-            distorted_n_grams_l4_4 = recurrent_generation_n_l_grams(L4, N2, &UKR_ALPHABET);
+            distorted_n_grams_l3_4 = recurrent_generation_n_l_grams(L3, N1, &UKR_ALPHABET, l_little);
+        });
+
+        s.spawn(|_s| {
+            distorted_n_grams_l4_1_r1 = vigenere_cipher_distortion(R1, &n_gram_l4, &UKR_ALPHABET, l_little);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l4_1_r2 = vigenere_cipher_distortion(R2, &n_gram_l4, &UKR_ALPHABET, l_little);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l4_1_r3 = vigenere_cipher_distortion(R3, &n_gram_l4, &UKR_ALPHABET, l_little);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l4_2 = gen_affine_distortion(&n_gram_l4, &UKR_ALPHABET, l_little);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l4_3 = gen_random_n_l_grams(L4, N2, &UKR_ALPHABET, l_little);
+        });
+        s.spawn(|_s| {
+            distorted_n_grams_l4_4 = recurrent_generation_n_l_grams(L4, N2, &UKR_ALPHABET, l_little);
         });
     });
     println!("Distorted N grams are made (criterion_1_2)");
@@ -615,39 +612,38 @@ pub fn run(filepath: &str) {
     println!(
         "Result: \
 
-        \n\t (criterion_1_2) [res1_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
-        \n\t (criterion_1_2) [res_1_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_1_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_1_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_1_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} , \
-        \n\t (criterion_1_2) [res_1_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
-        \n\t (criterion_1_2) [res_1_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
+        \n\t (criterion_1_2)[l: {l_little}] [res1_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
+        \n\t (criterion_1_2)[l: {l_little}] [res_1_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_1_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_1_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_1_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} , \
+        \n\t (criterion_1_2)[l: {l_little}] [res_1_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
+        \n\t (criterion_1_2)[l: {l_little}] [res_1_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
 
-        \n\t (criterion_1_2) [res_2_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_2_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_2_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_2_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_2_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_2_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_2_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_2_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_2_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_2_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_2_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_2_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_2_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_2_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
 
-        \n\t (criterion_1_2) [res_3_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_3_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_3_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_3_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_3_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_3_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_3_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_3_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_3_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_3_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_3_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_3_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_3_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_3_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
 
-        \n\t (criterion_1_2) [res_4_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_4_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_4_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_4_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_4_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_4_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_2) [res_4_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_4_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_4_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_4_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_4_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_4_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_4_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_2)[l: {l_little}] [res_4_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
                 ",
-
         res1_0,
         calculate_probs(res1_0.0, res1_0.1, n_gram_l1.len()),
         res1_1_r1,
@@ -705,6 +701,7 @@ pub fn run(filepath: &str) {
         res4_4,
         calculate_probs(res4_4.0, res4_4.1, distorted_n_grams_l4_4.len()),
     )
+}
 }
 
 fn criterion_1_2(
@@ -797,7 +794,7 @@ fn criterion_1_2(
                 };
             });
         });
-        println!("{has_prohibited_bigram}, {has_prohibited_three_gram}, {has_prohibited_l_gram }");
+        // println!("{has_prohibited_bigram}, {has_prohibited_three_gram}, {has_prohibited_l_gram }");
         if has_prohibited_bigram || has_prohibited_three_gram || has_prohibited_l_gram {
             h_1 += 1;
         } else {
