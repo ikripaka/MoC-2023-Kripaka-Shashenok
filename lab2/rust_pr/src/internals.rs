@@ -636,6 +636,18 @@ pub fn calculate_probs(h0: u64, h1: u64, total_l_grams_amount: usize) -> ((f64, 
     )
 }
 
+pub fn sort_hash_map_asc(map: &HashMap<String, u64>) -> Vec<(String, u64)> {
+    let mut vec: Vec<(String, u64)> = map.iter().map(|(x, y)| (x.clone(), *y)).collect();
+    vec.sort_by(|x, y| x.1.cmp(&y.1));
+    vec
+}
+
+pub fn sort_hash_map_desc(map: &HashMap<String, u64>) -> Vec<(String, u64)> {
+    let mut vec: Vec<(String, u64)> = map.iter().map(|(x, y)| (x.clone(), *y)).collect();
+    vec.sort_by(|x, y| y.1.cmp(&x.1));
+    vec
+}
+
 /// **format_file** -- formats file and deletes all redundant symbol
 /// except:
 ///     * ukrainian alphabet

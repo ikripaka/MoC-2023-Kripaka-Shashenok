@@ -1,11 +1,14 @@
 pub mod criterion_1_0;
+pub mod criterion_1_0_own;
 pub mod criterion_1_1;
+pub mod criterion_1_1_own;
 pub mod criterion_1_2;
+pub mod criterion_1_2_own;
 pub mod criterion_1_3;
+pub mod criterion_1_3_own;
 pub mod criterion_4_0;
 pub mod criterion_5_0;
 pub mod struct_lzma;
 pub mod struct_deflate;
-pub mod struct_bwt;
 pub mod criterion_3_0;
 pub mod criterion_5_1;

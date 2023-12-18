@@ -10,7 +10,7 @@ use crate::internals::{calculate_probs, double_content, gen_affine_distortion, g
 pub fn run(filepath: &str) {
     let time_prev = Local::now();
 
-    let threshold = 0.2;
+    let threshold = 0.39;
 
     let mut file = File::open(filepath).unwrap();
     let mut content = String::new();
@@ -232,13 +232,15 @@ pub fn run(filepath: &str) {
         });
         println!("Distorted N grams are made (struct_lzma)");
 
+        let (threshold1, threshold2, threshold3, threshold4) = (3.8, 1.0, 0.439, 0.30);
+
         rayon::scope(|s| {
             s.spawn(|_s| {
-                res1_0 = struct_lzma(L1, &n_gram_l1, threshold);
+                res1_0 = struct_lzma( &n_gram_l1, threshold);
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res1_1_r1 = struct_lzma(L1, &distorted_n_grams_l1_1_r1.0, threshold);
+                res1_1_r1 = struct_lzma( &distorted_n_grams_l1_1_r1.0, threshold);
                 println!(
                     "res1_1_r1 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -246,7 +248,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res1_1_r2 = struct_lzma(L1, &distorted_n_grams_l1_1_r2.0, threshold);
+                res1_1_r2 = struct_lzma( &distorted_n_grams_l1_1_r2.0, threshold);
                 println!(
                     "res1_1_r2 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -254,7 +256,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res1_1_r3 = struct_lzma(L1, &distorted_n_grams_l1_1_r3.0, threshold);
+                res1_1_r3 = struct_lzma( &distorted_n_grams_l1_1_r3.0, threshold);
                 println!(
                     "res1_1_r3 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -262,7 +264,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res1_2 = struct_lzma(L1, &distorted_n_grams_l1_2.0, threshold);
+                res1_2 = struct_lzma( &distorted_n_grams_l1_2.0, threshold);
                 println!(
                     "res1_2 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -270,7 +272,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res1_3 = struct_lzma(L1, &distorted_n_grams_l1_3, threshold);
+                res1_3 = struct_lzma( &distorted_n_grams_l1_3, threshold);
                 println!(
                     "res1_3 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -278,7 +280,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res1_4 = struct_lzma(L1, &distorted_n_grams_l1_4, threshold);
+                res1_4 = struct_lzma( &distorted_n_grams_l1_4, threshold);
                 println!(
                     "res1_4 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -287,7 +289,7 @@ pub fn run(filepath: &str) {
 
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res2_0 = struct_lzma(L2, &n_gram_l2, threshold);
+                res2_0 = struct_lzma( &n_gram_l2, threshold);
                 println!(
                     "res2_0 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -295,7 +297,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res2_1_r1 = struct_lzma(L2, &distorted_n_grams_l2_1_r1.0, threshold);
+                res2_1_r1 = struct_lzma( &distorted_n_grams_l2_1_r1.0, threshold);
                 println!(
                     "res2_1_r1 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -303,7 +305,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res2_1_r2 = struct_lzma(L2, &distorted_n_grams_l2_1_r2.0, threshold);
+                res2_1_r2 = struct_lzma( &distorted_n_grams_l2_1_r2.0, threshold);
                 println!(
                     "res2_1_r2 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -311,7 +313,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res2_1_r3 = struct_lzma(L2, &distorted_n_grams_l2_1_r3.0, threshold);
+                res2_1_r3 = struct_lzma( &distorted_n_grams_l2_1_r3.0, threshold);
                 println!(
                     "res2_1_r3 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -319,7 +321,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res2_2 = struct_lzma(L2, &distorted_n_grams_l2_2.0, threshold);
+                res2_2 = struct_lzma( &distorted_n_grams_l2_2.0, threshold);
                 println!(
                     "res2_2 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -327,7 +329,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res2_3 = struct_lzma(L2, &distorted_n_grams_l2_3, threshold);
+                res2_3 = struct_lzma( &distorted_n_grams_l2_3, threshold);
                 println!(
                     "res2_3 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -335,7 +337,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res2_4 = struct_lzma(L2, &distorted_n_grams_l2_4, threshold);
+                res2_4 = struct_lzma( &distorted_n_grams_l2_4, threshold);
                 println!(
                     "res2_4 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -344,7 +346,7 @@ pub fn run(filepath: &str) {
 
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res3_0 = struct_lzma(L3, &n_gram_l3, threshold);
+                res3_0 = struct_lzma( &n_gram_l3, threshold);
                 println!(
                     "res3_0 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -352,7 +354,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res3_1_r1 = struct_lzma(L3, &distorted_n_grams_l3_1_r1.0, threshold);
+                res3_1_r1 = struct_lzma( &distorted_n_grams_l3_1_r1.0, threshold);
                 println!(
                     "res3_1_r1 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -360,7 +362,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res3_1_r2 = struct_lzma(L3, &distorted_n_grams_l3_1_r2.0, threshold);
+                res3_1_r2 = struct_lzma( &distorted_n_grams_l3_1_r2.0, threshold);
                 println!(
                     "res3_1_r2 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -368,7 +370,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res3_1_r3 = struct_lzma(L3, &distorted_n_grams_l3_1_r3.0, threshold);
+                res3_1_r3 = struct_lzma( &distorted_n_grams_l3_1_r3.0, threshold);
                 println!(
                     "res3_1_r3 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -376,7 +378,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res3_2 = struct_lzma(L3, &distorted_n_grams_l3_2.0, threshold);
+                res3_2 = struct_lzma( &distorted_n_grams_l3_2.0, threshold);
                 println!(
                     "res3_2 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -384,7 +386,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res3_3 = struct_lzma(L3, &distorted_n_grams_l3_3, threshold);
+                res3_3 = struct_lzma( &distorted_n_grams_l3_3, threshold);
                 println!(
                     "res3_3 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -392,7 +394,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res3_4 = struct_lzma(L3, &distorted_n_grams_l3_4, threshold);
+                res3_4 = struct_lzma( &distorted_n_grams_l3_4, threshold);
                 println!(
                     "res3_4 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -401,7 +403,7 @@ pub fn run(filepath: &str) {
 
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res4_0 = struct_lzma(L4, &n_gram_l4, threshold);
+                res4_0 = struct_lzma( &n_gram_l4, threshold);
                 println!(
                     "res4_0 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -409,7 +411,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res4_1_r1 = struct_lzma(L4, &distorted_n_grams_l4_1_r1.0, threshold);
+                res4_1_r1 = struct_lzma( &distorted_n_grams_l4_1_r1.0, threshold);
                 println!(
                     "res4_1_r1 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -417,7 +419,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res4_1_r2 = struct_lzma(L4, &distorted_n_grams_l4_1_r2.0, threshold);
+                res4_1_r2 = struct_lzma( &distorted_n_grams_l4_1_r2.0, threshold);
                 println!(
                     "res4_1_r2 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -425,7 +427,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res4_1_r3 = struct_lzma(L4, &distorted_n_grams_l4_1_r3.0, threshold);
+                res4_1_r3 = struct_lzma( &distorted_n_grams_l4_1_r3.0, threshold);
                 println!(
                     "res4_1_r3 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -433,7 +435,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res4_2 = struct_lzma(L4, &distorted_n_grams_l4_2.0, threshold);
+                res4_2 = struct_lzma( &distorted_n_grams_l4_2.0, threshold);
                 println!(
                     "res4_2 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -441,7 +443,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res4_3 = struct_lzma(L4, &distorted_n_grams_l4_3, threshold);
+                res4_3 = struct_lzma( &distorted_n_grams_l4_3, threshold);
                 println!(
                     "res4_3 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -449,7 +451,7 @@ pub fn run(filepath: &str) {
             });
             s.spawn(|_s| {
                 let time_prev_local = Local::now();
-                res4_4 = struct_lzma(L4, &distorted_n_grams_l4_4, threshold);
+                res4_4 = struct_lzma( &distorted_n_grams_l4_4, threshold);
                 println!(
                     "res4_4 FINISHED!! Time:{}",
                     (Local::now() - time_prev_local).num_minutes()
@@ -558,26 +560,15 @@ pub fn run(filepath: &str) {
 }
 
 fn struct_lzma(
-    l: usize,
     l_grams: &Vec<String>,
     threshold: f64,
 ) -> (u64, u64) {
     let (mut h_0, mut h_1) = (0, 0);
 
     for l_gram in l_grams {
-        let (mut compressed_normal_text, mut compressed_random_text): (Vec<u8>, Vec<u8>) = (Vec::new(), Vec::new());
-        rayon::scope(|s| {
-            s.spawn(|_s| {
-                compressed_normal_text = compress(l_gram.as_bytes());
-            });
-            s.spawn(|_s| {
-                compressed_random_text = compress(gen_random_l_gram_char_alphabet(l, UKR_ALPHABET.len(), &UKR_ALPHABET).as_bytes());
-            });
-        });
-        let compression_coef_normal = l as f64 / compressed_normal_text.len() as f64;
-        let compression_coef_random = l as f64 / compressed_random_text.len() as f64;
-
-        if (compression_coef_normal - compression_coef_random).abs() <= threshold {
+        let compressed = compress(l_gram.as_bytes());;
+        let compression_coef = compressed.len() as f64 / l_gram.as_bytes().len() as f64;
+        if compression_coef > threshold {
             h_1 += 1;
         } else {
             h_0 += 1;
@@ -597,10 +588,21 @@ fn sorting() {
         .unwrap()
         .as_str()
         .to_string();
-    let (chunks, threshold) = (100, 10);
-    let mut compressed_random_text = Default::default();
+    let (chunks, threshold) = (10, 10);
+    let ordinary_text = "нийбільшез";
     let random_text = gen_random_l_gram_char_alphabet(chunks, UKR_ALPHABET.len(), &UKR_ALPHABET);
-    compressed_random_text = compress(random_text.as_bytes());
+    let mut compressed_random_text = compress(random_text.as_bytes());
+    let mut compressed_ordinary_text = compress(ordinary_text.as_bytes());
 
-    println!("{random_text} -- {} -- {:?}", compressed_random_text.len(), compressed_random_text)
+    println!(
+        "{} -- {:?} -- {} \n\t {} -- {:?} -- {}",
+        "random",
+        (random_text.as_bytes().len(),compressed_random_text.len()),
+        // compressed_random_text,
+        compressed_random_text.len() as f64 / random_text.as_bytes().len() as f64,
+        "ordinary",
+        (ordinary_text.as_bytes().len(), compressed_ordinary_text.len()),
+        // ordinary_text.as_bytes(),
+        compressed_ordinary_text.len() as f64 / ordinary_text.as_bytes().len() as f64
+    )
 }
