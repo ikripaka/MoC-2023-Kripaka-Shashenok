@@ -197,7 +197,7 @@ pub fn run(filepath: &str) {
     ) = Default::default();
 
 
-    for l_little in 2..=2 {
+    for l_little in 1..=2 {
         rayon::scope(|s| {
             s.spawn(|_s| {
                 distorted_n_grams_l1_1_r1 =

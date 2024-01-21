@@ -5,7 +5,7 @@ use crate::internals::{
     make_n_gram_on_content_from_str, recurrent_generation_n_l_grams, sort_hash_map_asc,
     vigenere_cipher_distortion,
 };
-use crate::{L1, L2, L3, L4, L_BIGRAM, L_MONOGRAM, L_THREE_GRAM, N1, R1, R2, R3, UKR_ALPHABET};
+use crate::{L1, L2, L3, L4, L_BIGRAM, L_MONOGRAM, L_THREE_GRAM, N1, N2, R1, R2, R3, UKR_ALPHABET};
 use chrono::Local;
 use dotenv::dotenv;
 use std::collections::HashMap;
@@ -273,11 +273,11 @@ pub fn run(filepath: &str) {
                 distorted_n_grams_l4_2 = gen_affine_distortion(&n_gram_l4, &UKR_ALPHABET, l_little);
             });
             s.spawn(|_s| {
-                distorted_n_grams_l4_3 = gen_random_n_l_grams(L4, N1, &UKR_ALPHABET, l_little);
+                distorted_n_grams_l4_3 = gen_random_n_l_grams(L4, N2, &UKR_ALPHABET, l_little);
             });
             s.spawn(|_s| {
                 distorted_n_grams_l4_4 =
-                    recurrent_generation_n_l_grams(L4, N1, &UKR_ALPHABET, l_little);
+                    recurrent_generation_n_l_grams(L4, N2, &UKR_ALPHABET, l_little);
             });
         });
         println!("Distorted N grams are made (criterion_1_3)");

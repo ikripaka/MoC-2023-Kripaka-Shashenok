@@ -27,12 +27,12 @@ fn main() {
     // criterions::criterion_1_2_own::run(&filepath);
     // criterions::criterion_1_3::run(&filepath);
     // criterions::criterion_1_3_own::run(&filepath);
-    // criterions::criterion_3_0::run(&filepath);
+    criterions::criterion_3_0::run(&filepath);
     // criterions::criterion_4_0::run(&filepath);
     // criterions::criterion_5_0::run(&filepath);
-    criterions::criterion_5_1::run(&filepath);
-    criterions::struct_deflate::run(&filepath);
-    criterions::struct_lzma::run(&filepath);
+    // criterions::criterion_5_1::run(&filepath);
+    // criterions::struct_deflate::run(&filepath);
+    // criterions::struct_lzma::run(&filepath);
 
     println!("{}", "ALL IS OK");
 }

@@ -1,0 +1,67 @@
+freq_table_three_gram DONE
+freq_table_bigram DONE
+Frequency tables are calculated (criterion_3_0)
+probs_monogram DONE
+probs_bigram DONE
+h_l_1 DONE
+h_l_2 DONE
+N grams are made (criterion_3_0)
+Distorted N grams are made (criterion_3_0)
+res4_4 FINISHED!! Time:0
+res4_3 FINISHED!! Time:0
+res1_1_r1 FINISHED!! Time:0
+res1_1_r2 FINISHED!! Time:0
+res1_3 FINISHED!! Time:0
+res1_4 FINISHED!! Time:0
+res4_2 FINISHED!! Time:0
+res2_0 FINISHED!! Time:0
+res1_1_r3 FINISHED!! Time:0
+res4_1_r3 FINISHED!! Time:0
+res1_2 FINISHED!! Time:0
+res4_1_r2 FINISHED!! Time:0
+res2_1_r1 FINISHED!! Time:0
+res2_1_r2 FINISHED!! Time:0
+res2_3 FINISHED!! Time:0
+res2_4 FINISHED!! Time:0
+res4_1_r1 FINISHED!! Time:0
+res2_1_r3 FINISHED!! Time:0
+res2_2 FINISHED!! Time:0
+res3_0 FINISHED!! Time:0
+res4_0 FINISHED!! Time:0
+res3_1_r1 FINISHED!! Time:0
+res3_1_r2 FINISHED!! Time:0
+res3_1_r3 FINISHED!! Time:0
+res3_4 FINISHED!! Time:0
+res3_2 FINISHED!! Time:0
+res3_3 FINISHED!! Time:0
+IT FINALLY FINISHED!! Time:2
+Result:
+         (criterion_3_0) [k_p: 1.7] [l: 1] [res1_0](h0, h1): (771884, 273408), ((p_h_0, p_h_1), (alpha, beta)): ((0.7384386372420338, 0.2615613627579662), (0.2615613627579662, 0.7384386372420338))
+         (criterion_3_0) [k_p: 1.7] [l: 1] [res_1_r1](h0, h1): (771884, 273408), ((p_h_0, p_h_1), (alpha, beta)): ((0.7384386372420338, 0.2615613627579662), (0.2615613627579662, 0.7384386372420338))
+         (criterion_3_0) [k_p: 1.7] [l: 1] [res_1_r2](h0, h1): (852603, 192689), ((p_h_0, p_h_1), (alpha, beta)): ((0.8156601217650188, 0.18433987823498124), (0.18433987823498124, 0.8156601217650188))
+         (criterion_3_0) [k_p: 1.7] [l: 1] [res_1_r3](h0, h1): (868798, 176494), ((p_h_0, p_h_1), (alpha, beta)): ((0.8311534001982221, 0.16884659980177788), (0.16884659980177788, 0.8311534001982221))
+         (criterion_3_0) [k_p: 1.7] [l: 1] [res_1_2](h0, h1): (771884, 273408), ((p_h_0, p_h_1), (alpha, beta)): ((0.7384386372420338, 0.2615613627579662), (0.2615613627579662, 0.7384386372420338)) ,
+         (criterion_3_0) [k_p: 1.7] [l: 1] [res_1_3](h0, h1): (8510, 1490), ((p_h_0, p_h_1), (alpha, beta)): ((0.851, 0.149), (0.149, 0.851))
+         (criterion_3_0) [k_p: 1.7] [l: 1] [res_1_4](h0, h1): (8749, 1251), ((p_h_0, p_h_1), (alpha, beta)): ((0.8749, 0.1251), (0.1251, 0.8749))
+         (criterion_3_0) [k_p: 0.3] [l: 1] [res_2_0](h0, h1): (74960, 29569), ((p_h_0, p_h_1), (alpha, beta)): ((0.717121564350563, 0.282878435649437), (0.282878435649437, 0.717121564350563))
+         (criterion_3_0) [k_p: 0.3] [l: 1] [res_2_r1](h0, h1): (74960, 29569), ((p_h_0, p_h_1), (alpha, beta)): ((0.717121564350563, 0.282878435649437), (0.282878435649437, 0.717121564350563))
+         (criterion_3_0) [k_p: 0.3] [l: 1] [res_2_r2](h0, h1): (104518, 11), ((p_h_0, p_h_1), (alpha, beta)): ((0.9998947660457863, 0.00010523395421366319), (0.00010523395421366319, 0.9998947660457863))
+         (criterion_3_0) [k_p: 0.3] [l: 1] [res_2_r3](h0, h1): (104366, 163), ((p_h_0, p_h_1), (alpha, beta)): ((0.9984406241330157, 0.0015593758669842819), (0.0015593758669842819, 0.9984406241330156))
+         (criterion_3_0) [k_p: 0.3] [l: 1] [res_2_2](h0, h1): (0, 104529), ((p_h_0, p_h_1), (alpha, beta)): ((0.0, 1.0), (NaN, 0.0))
+         (criterion_3_0) [k_p: 0.3] [l: 1] [res_2_3](h0, h1): (9921, 79), ((p_h_0, p_h_1), (alpha, beta)): ((0.9921, 0.0079), (0.0079, 0.9920999999999999))
+         (criterion_3_0) [k_p: 0.3] [l: 1] [res_2_4](h0, h1): (9583, 417), ((p_h_0, p_h_1), (alpha, beta)): ((0.9583, 0.0417), (0.0417, 0.9583))
+         (criterion_3_0) [k_p: 0.25] [l: 1] [res_3_0](h0, h1): (10452, 0), ((p_h_0, p_h_1), (alpha, beta)): ((1.0, 0.0), (0.0, NaN))
+         (criterion_3_0) [k_p: 0.25] [l: 1] [res_3_r1](h0, h1): (10452, 0), ((p_h_0, p_h_1), (alpha, beta)): ((1.0, 0.0), (0.0, NaN))
+         (criterion_3_0) [k_p: 0.25] [l: 1] [res_3_r2](h0, h1): (454, 9998), ((p_h_0, p_h_1), (alpha, beta)): ((0.043436662839647915, 0.9565633371603521), (0.9565633371603521, 0.043436662839647915))
+         (criterion_3_0) [k_p: 0.25] [l: 1] [res_3_r3](h0, h1): (0, 10452), ((p_h_0, p_h_1), (alpha, beta)): ((0.0, 1.0), (NaN, 0.0))
+         (criterion_3_0) [k_p: 0.25] [l: 1] [res_3_2](h0, h1): (0, 10452), ((p_h_0, p_h_1), (alpha, beta)): ((0.0, 1.0), (NaN, 0.0))
+         (criterion_3_0) [k_p: 0.25] [l: 1] [res_3_3](h0, h1): (0, 10000), ((p_h_0, p_h_1), (alpha, beta)): ((0.0, 1.0), (NaN, 0.0))
+         (criterion_3_0) [k_p: 0.25] [l: 1] [res_3_4](h0, h1): (0, 10000), ((p_h_0, p_h_1), (alpha, beta)): ((0.0, 1.0), (NaN, 0.0))
+         (criterion_3_0) [k_p: 0.1] [l: 1] [res_4_0](h0, h1): (1045, 0), ((p_h_0, p_h_1), (alpha, beta)): ((1.0, 0.0), (0.0, NaN))
+         (criterion_3_0) [k_p: 0.1] [l: 1] [res_4_r1](h0, h1): (1045, 0), ((p_h_0, p_h_1), (alpha, beta)): ((1.0, 0.0), (0.0, NaN))
+         (criterion_3_0) [k_p: 0.1] [l: 1] [res_4_r2](h0, h1): (0, 1045), ((p_h_0, p_h_1), (alpha, beta)): ((0.0, 1.0), (NaN, 0.0))
+         (criterion_3_0) [k_p: 0.1] [l: 1] [res_4_r3](h0, h1): (0, 1045), ((p_h_0, p_h_1), (alpha, beta)): ((0.0, 1.0), (NaN, 0.0))
+         (criterion_3_0) [k_p: 0.1] [l: 1] [res_4_2](h0, h1): (0, 1045), ((p_h_0, p_h_1), (alpha, beta)): ((0.0, 1.0), (NaN, 0.0))
+         (criterion_3_0) [k_p: 0.1] [l: 1] [res_4_3](h0, h1): (0, 1000), ((p_h_0, p_h_1), (alpha, beta)): ((0.0, 1.0), (NaN, 0.0))
+         (criterion_3_0) [k_p: 0.1] [l: 1] [res_4_4](h0, h1): (0, 1000), ((p_h_0, p_h_1), (alpha, beta)): ((0.0, 1.0), (NaN, 0.0))
+ALL IS OK

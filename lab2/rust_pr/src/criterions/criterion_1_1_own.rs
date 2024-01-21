@@ -642,37 +642,37 @@ pub fn run(filepath: &str) {
         println!(
             "Result: \
 
-        \n\t (criterion_1_1) [k_p: {k_p_1}] [l: {l_little}] [res1_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
-        \n\t (criterion_1_1) [k_p: {k_p_1}] [l: {l_little}] [res_1_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_1}] [l: {l_little}] [res_1_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_1}] [l: {l_little}] [res_1_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_1}] [l: {l_little}] [res_1_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} , \
-        \n\t (criterion_1_1) [k_p: {k_p_1}] [l: {l_little}] [res_1_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
-        \n\t (criterion_1_1) [k_p: {k_p_1}] [l: {l_little}] [res_1_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
+        \n\t (criterion_1_1_own) [k_p: {k_p_1}] [l: {l_little}] [res1_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
+        \n\t (criterion_1_1_own) [k_p: {k_p_1}] [l: {l_little}] [res_1_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_1}] [l: {l_little}] [res_1_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_1}] [l: {l_little}] [res_1_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_1}] [l: {l_little}] [res_1_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} , \
+        \n\t (criterion_1_1_own) [k_p: {k_p_1}] [l: {l_little}] [res_1_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
+        \n\t (criterion_1_1_own) [k_p: {k_p_1}] [l: {l_little}] [res_1_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?} \
 
-        \n\t (criterion_1_1) [k_p: {k_p_2}] [l: {l_little}] [res_2_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_2}] [l: {l_little}] [res_2_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_2}] [l: {l_little}] [res_2_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_2}] [l: {l_little}] [res_2_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_2}] [l: {l_little}] [res_2_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_2}] [l: {l_little}] [res_2_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_2}] [l: {l_little}] [res_2_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_2}] [l: {l_little}] [res_2_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_2}] [l: {l_little}] [res_2_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_2}] [l: {l_little}] [res_2_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_2}] [l: {l_little}] [res_2_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_2}] [l: {l_little}] [res_2_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_2}] [l: {l_little}] [res_2_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_2}] [l: {l_little}] [res_2_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
 
-        \n\t (criterion_1_1) [k_p: {k_p_3}] [l: {l_little}] [res_3_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_3}] [l: {l_little}] [res_3_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_3}] [l: {l_little}] [res_3_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_3}] [l: {l_little}] [res_3_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_3}] [l: {l_little}] [res_3_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_3}] [l: {l_little}] [res_3_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_3}] [l: {l_little}] [res_3_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_3}] [l: {l_little}] [res_3_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_3}] [l: {l_little}] [res_3_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_3}] [l: {l_little}] [res_3_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_3}] [l: {l_little}] [res_3_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_3}] [l: {l_little}] [res_3_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_3}] [l: {l_little}] [res_3_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_3}] [l: {l_little}] [res_3_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
 
-        \n\t (criterion_1_1) [k_p: {k_p_4}] [l: {l_little}] [res_4_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_4}] [l: {l_little}] [res_4_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_4}] [l: {l_little}] [res_4_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_4}] [l: {l_little}] [res_4_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_4}] [l: {l_little}] [res_4_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_4}] [l: {l_little}] [res_4_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
-        \n\t (criterion_1_1) [k_p: {k_p_4}] [l: {l_little}] [res_4_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_4}] [l: {l_little}] [res_4_0](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_4}] [l: {l_little}] [res_4_r1](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_4}] [l: {l_little}] [res_4_r2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_4}] [l: {l_little}] [res_4_r3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_4}] [l: {l_little}] [res_4_2](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_4}] [l: {l_little}] [res_4_3](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
+        \n\t (criterion_1_1_own) [k_p: {k_p_4}] [l: {l_little}] [res_4_4](h0, h1): {:?}, ((p_h_0, p_h_1), (alpha, beta)): {:?}\
 ",
             res1_0,
             calculate_probs(res1_0.0, res1_0.1, n_gram_l1.len()),

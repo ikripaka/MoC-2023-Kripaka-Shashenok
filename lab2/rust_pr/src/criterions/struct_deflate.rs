@@ -5,7 +5,7 @@ use chrono::Local;
 use deflate::write::ZlibEncoder;
 use dotenv::dotenv;
 
-use crate::{L1, L2, L3, L4, L_BIGRAM, L_THREE_GRAM, N1, R1, R2, R3, UKR_ALPHABET};
+use crate::{L1, L2, L3, L4, L_BIGRAM, L_THREE_GRAM, N1, N2, R1, R2, R3, UKR_ALPHABET};
 use crate::internals::{calculate_probs, double_content, gen_affine_distortion, gen_random_l_gram_char_alphabet, gen_random_n_l_grams, make_frequency_table, make_n_gram_on_content_from_str, recurrent_generation_n_l_grams, vigenere_cipher_distortion};
 
 pub fn run(filepath: &str) {
@@ -223,10 +223,10 @@ pub fn run(filepath: &str) {
                 distorted_n_grams_l4_2 = gen_affine_distortion(&n_gram_l4, &UKR_ALPHABET, l_little);
             });
             s.spawn(|_s| {
-                distorted_n_grams_l4_3 = gen_random_n_l_grams(L4, N1, &UKR_ALPHABET, l_little);
+                distorted_n_grams_l4_3 = gen_random_n_l_grams(L4, N2, &UKR_ALPHABET, l_little);
             });
             s.spawn(|_s| {
-                distorted_n_grams_l4_4 = recurrent_generation_n_l_grams(L4, N1, &UKR_ALPHABET, l_little);
+                distorted_n_grams_l4_4 = recurrent_generation_n_l_grams(L4, N2, &UKR_ALPHABET, l_little);
             });
         });
         println!("Distorted N grams are made (struct_deflate)");
