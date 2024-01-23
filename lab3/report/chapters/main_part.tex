@@ -5,7 +5,7 @@
 Практично ознайомитися із принципами статистичних методiв розрiзнення змiстовного тексту вiд випадкової послiдовностi, порівняти їх.
 
 \subsection{Постановка задачі та варіант}
-У даній роботі виконував варіант №4 як і звичайний так і простий.
+У даній роботі виконував варіант №4 як і звичайний так і простий длля атаки малої експоненти, а для атаки посередині використовую простий варіант та простіший так як у бібліотеці погано працює піднесення до степеня. Усі файли, що були використані для обчислень наведені на гіт репозиторії.
 
 
 \begin{tabularx}{\textwidth}{X|X}
@@ -25,14 +25,14 @@
 
         \begin{figure}[!h]
             \centering
-            \includegraphics[width=0.5\linewidth]{Images/chinese_easy.png}
+            \includegraphics[scale=0.3]{Images/chinese_easy.png}
             \caption{Атака на легкий варіант.}
             \label{fig:chinese_easy}
         \end{figure}
 
         \begin{figure}[!h]
             \centering
-            \includegraphics[width=0.5\linewidth]{Images/chinese_hard.png}
+            \includegraphics[scale=0.25]{Images/chinese_normal.png}
             \caption{Атака на звичайний варіант.}
             \label{fig:chinese_hard}
         \end{figure}
@@ -48,14 +48,23 @@
 
 \begin{figure}[!h]
             \centering
-            \includegraphics[scale=0.35]{Images/middle_easy.png}
+            \includegraphics[scale=0.4]{Images/meet_in_middle_easy.png}
             \caption{Атака на легкий варіант разом із повідомленням m та перевіркою на правильність.}
             \label{fig:middle_easy}
         \end{figure}
 
+\begin{figure}[!h]
+            \centering
+            \includegraphics[scale=0.4]{Images/meet_in_middle_easiest.png}
+            \caption{Атака на найлегший варіант разом із повідомленням m та перевіркою на правильність.}
+            \label{fig:middle_easy}
+        \end{figure}
+
+
 В результаті проведедння атаки отримав такі часові результати:
 \begin{itemize}
-    \item для легкого варіанту \textbf{time.spent} $=9$ хвилин;  
+    \item для найлегшого варіанту \textbf{time.spent} $=0.51$ секунд; 
+    \item для легкого варіанту \textbf{time.spent} $=1.445$ секунд;  
     \item для звичайного варіанту \textbf{time.spent} $=?$ не зміг дочекатися.
 \end{itemize}
 
