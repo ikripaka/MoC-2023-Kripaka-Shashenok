@@ -1,13 +1,13 @@
 use chrono::Local;
-use lab3_rust::{check_hastard_attack, check_meet_in_the_middle, get_string_hex_array, perform_hastad_broadcast_attack, perform_meet_in_the_middle_attack};
+use lab3_rust::{
+    check_hastard_attack, check_meet_in_the_middle, get_string_hex_array,
+    perform_hastad_broadcast_attack, perform_meet_in_the_middle_attack,
+};
 use num_bigint::BigUint;
-use num_traits::Num;
-
-const MITM_VAR_PATH: &str = "./tmp/MitM_vars/MitM_RSA_2048_20_regular/04.txt";
-const SE_VARS_PATH: &str = "./tmp/SE_vars/SE_RSA_1024_5_hard/04.txt";
+use num_traits::{Num, ToBytes};
 
 fn main() {
-    for is_hard in 0..=1{
+    for is_hard in 0..=1 {
         let (mut c_i, mut n_i, mut l) = (Vec::new(), Vec::new(), 0);
         if is_hard == 1 {
             c_i = vec![
@@ -30,34 +30,34 @@ fn main() {
                     "1b11452e4f15cc1fdf65f2d0c09773a56295b8447ada0d02f095ace99c857391",
                     16,
                 )
-                    .unwrap(),
+                .unwrap(),
                 BigUint::from_str_radix(
                     "425d16b88571f6f9e68e654c9578654933dd3cd5b20c94cd2094d97aafa4a6f5",
                     16,
                 )
-                    .unwrap(),
+                .unwrap(),
                 BigUint::from_str_radix(
                     "8c7f8d4b03879db2c7942ecee64aae63aa195cf1b2ee9b1037f96fa21f83c6d7",
                     16,
                 )
-                    .unwrap(),
+                .unwrap(),
             ];
             n_i = vec![
                 BigUint::from_str_radix(
                     "993F26C703E0FC07A0B64325CDBE56B26630092DF5852F5A161C3AF11D075409",
                     16,
                 )
-                    .unwrap(),
+                .unwrap(),
                 BigUint::from_str_radix(
                     "A1ABFDEBA3E44475314CDB9157C29767A2DD9297E2802D00A92D249D7FCCD509",
                     16,
                 )
-                    .unwrap(),
+                .unwrap(),
                 BigUint::from_str_radix(
                     "D3D72C10F8F3E4CFF260F5C7C042719468C653437C3C1926E8BBCBEDEE7B7D41",
                     16,
                 )
-                    .unwrap(),
+                .unwrap(),
             ];
         }
 
@@ -65,17 +65,23 @@ fn main() {
         let m = perform_hastad_broadcast_attack(&c_i, &n_i);
         let after = (Local::now() - before);
         println!(
-            "is_hard: {is_hard}, [Hastard broadcast attack] m: {}, time_spent: {}, check: {:?}",
-            get_string_hex_array(&m.to_radix_be(16)), after, check_hastard_attack(&c_i, &n_i,&m)
+            "is_hard: {is_hard}, [Hastard broadcast attack] m: {}, time_spent: {} milliseconds, check: {:?}",
+            get_string_hex_array(&m.to_bytes_be()),
+            after.num_milliseconds(),
+            check_hastard_attack(&c_i, &n_i, &m)
         );
 
         if is_hard == 1 {
-            c_i = vec![
-                BigUint::from_str_radix("74de573c7ccc83076aa3744ced51f5e058ac7a3e41db240fe4719b381817c424e3c6be62578a3d823d009e0343feeca2eec2b94e163ad7b522f1c0174f8f47f5cc4c7b07c9ff0ddc4f5116369477cca0a9cfba0f2973eb889baf5f9f4310e154650e4b00c0e437b95293074eabaa539bf7ff6f648ab02a7b8b6aff764f60cc77d43a0331899820e6762f2c8ceb709635fc0c2c2c6682863a3a6659a1d2cac64f064543b5eccdb4bb2d685a9bc46f49b003506da3727b6ae95fe1b62fdd8329cd6a387290fa117a824b740c0a2809ff26cf2e704cb62c300660303e2403e8b7c455b00b9436fc330ad0585736889c22061d80b90cbfd313b1ba92f60e5cd16dc5", 16).unwrap(),
-            ];
-            n_i = vec![
-                BigUint::from_str_radix("ABF2848CD165F354E9C0ABC7BE0E18DD357B96C109EB06936DFCB37E77BA44BD15EA849B03E3971F91573D61D3932C3D25BF9DB0FC25910F7BC854F111FF61ABEA968F90ECB8BD126440B8A9326438C6812E4D552981FF2A02DCF6E7F6AC782CC7636A4265BDACAEB2BD60825DC670AEDE593F45FCEA3653870B8FADA0829E5B1FB1D5B63BE1035CF897AA436563A13B07DCAB16012D3F8DCB7A0497EEDCBE21D05C20732D9A31CD917CE5F060BA4D0F92BEBAE885E9832F20BD177F92613E8AD2A42AE7CEF35E769C03741AA70FAC5EE842C89E45520712DCE08CF2C1CC167B559AD0E17125072A2A1C041382BB0CB299B8E647BE046FAD04462C641ACB4C9F", 16).unwrap(),
-            ];
+            c_i = vec![BigUint::from_str_radix(
+                "5a6d8a817c62a8fcb273be7832cd9c60883e60e21590bd32067211897c15ba24",
+                16,
+            )
+            .unwrap()];
+            n_i = vec![BigUint::from_str_radix(
+                "BE8EF52F6A5F8D7161C78E789C33408F0558560E532EF3FD4B356488CE7A6A1B",
+                16,
+            )
+            .unwrap()];
             l = 20;
         } else {
             c_i = vec![
@@ -97,12 +103,12 @@ fn main() {
 
         let before = Local::now();
         let m = perform_meet_in_the_middle_attack(l, &c_i[0], &n_i[0]).unwrap();
-        let after =  Local::now() - before;
+        let after = Local::now() - before;
         println!(
-            "is hard: {is_hard}, [Meet in the middle] m: {:02X?}, time_spent: {}, check: {:?}",
-            get_string_hex_array(&m.to_radix_be(16)),after.num_minutes(), check_meet_in_the_middle(&c_i[0], &n_i[0], &m)
+            "is hard: {is_hard}, [Meet in the middle] m: {:02X?}, time_spent: {} milliseconds, check: {:?}",
+            get_string_hex_array(&m.to_bytes_be()),
+            after.num_milliseconds(),
+            check_meet_in_the_middle(&c_i[0], &n_i[0], &m)
         );
-
-        // println!("Checking meet_in_the_middle is_hard: {is_hard}, status: {:?}",check_meet_in_the_middle(&c_i[0], &n_i[0], &(BigUint::from(715293_u64) % &n_i[0])));
     }
 }

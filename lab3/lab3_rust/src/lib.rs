@@ -1,7 +1,7 @@
+use chrono::Local;
 use num_bigint::{BigInt, BigUint};
 use num_traits::{One, Zero};
 use std::ops::Index;
-use chrono::Local;
 
 const E_65537: u32 = 0x10001;
 
@@ -63,7 +63,7 @@ fn solve_equations(
                 &BigInt::from(m_i[i].clone()),
                 &BigInt::from(equations_vec[i].n.clone()),
             )
-                .unwrap(),
+            .unwrap(),
         )
     }
 
@@ -94,10 +94,6 @@ pub fn perform_hastad_broadcast_attack(c_i: &[BigUint], n_i: &[BigUint]) -> BigU
         }
         acc
     };
-    // println!(
-    //     "\t== Solving hastad_broadcast_attack\n\t=== N: {}",
-    //     get_string_hex_array(&n.to_radix_be(16))
-    // );
     let c = solve_equations(
         &c_i.iter()
             .enumerate()
@@ -108,8 +104,7 @@ pub fn perform_hastad_broadcast_attack(c_i: &[BigUint], n_i: &[BigUint]) -> BigU
             .collect(),
         &n,
     )
-        .unwrap();
-    // println!("\t=== C: {}", get_string_hex_array(&c.to_radix_be(16)));
+    .unwrap();
 
     c.nth_root(n_i.len() as u32)
 }
@@ -120,26 +115,23 @@ pub fn perform_meet_in_the_middle_attack(
     n: &BigUint,
 ) -> Result<BigUint, String> {
     let e = BigUint::from(E_65537);
-    // println!("\t == Performing meet_in_the_middle_attack\n\t=== E: {}", get_string_hex_array(&e.to_radix_be(16)));
 
     let mut x = Vec::new();
-    for i in 1_u32..=(2 << (l - 1)) {
-        if i% 150000 == 0 {println!("150_000, {i}, {}", Local::now())}
+    for i in 1_u32..=(1 << (l >> 1)) {
         x.push((BigUint::from(i), BigUint::from(i).modpow(&e, n)))
     }
 
-
-    println!("{}", x.len());
-    for i in 1..=x.len() {
+    for i in 0..=x.len() {
         let cs =
-            (inverse(&BigInt::from(x[i - 1].1.clone()), &BigInt::from(n.clone()))
-                .unwrap()
-                * c);
+            (inverse(&BigInt::from(x[i].1.clone()), &BigInt::from(n.clone())).unwrap() * c) % n;
         for (t, t_e) in &x {
-            if *t_e == cs {
-                println!("T: {:?}, S: {:?}", t, i);
-
-                return Ok(BigUint::from(i) * t);
+            if *t_e == cs && (*t_e != BigUint::one()) {
+                println!(
+                    "T: {:?}, S: {:?}",
+                    t.to_str_radix(16),
+                    x[i].0.to_str_radix(16)
+                );
+                return Ok(&x[i].0 * t);
             }
         }
     }
